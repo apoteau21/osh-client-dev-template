@@ -30,7 +30,7 @@ export default function App() {
     // Do not commit your access token to a public repository.
     // Ion.defaultAccessToken = '';
 
-    const server = "api.georobotix.io/ogc/t18/api";
+    const server = "osh-dev.botts-inc.com:8443/sensorhub/api";
     const start = useMemo(() => new Date((Date.now() - 600000)).toISOString(), []);
     const end = "2024-12-31T23:59:59Z";
     const secure = true;
@@ -38,14 +38,69 @@ export default function App() {
     const attitudeInfoDsId = "mlme3gtdfepvc";
     const videoDsId = "h225hesual08g";
     const fovDsId = "iabpf1ivua1qm";
+    const REPLAY_SPEED = 1.0;
 
     const cesiumContainer = useRef(null);
     const videoContainer = useRef(null);
 
+    const oshPTZVideoSource = useMemo(() => new SweApi('OSH-PTZ-Video-Camera', {
+        protocol: "wss",
+        endpointUrl:  server,
+        resource: `/datastreams/k992mhd5jr7ri/observations`,
+        tls: secure,
+        startTime: "2024-04-25T15:43:06.568Z",
+        endTime: "2024-04-25T18:22:43Z",
+        mode: Mode.REPLAY,
+        responseFormat: 'application/swe+binary',
+    }), []);
+
+    const raavakLocDataSource = useMemo(() => new SweApi("RAAVAK-Location", {
+        protocol: "wss",
+        endpointUrl: server,
+        resource: `/datastreams/${locationInfoDsId}/observations`,
+        startTime: "2024-04-24T16:55:58Z",
+        endTime: "2024-04-24T17:00:57Z",
+        mode: Mode.REPLAY,
+        responseFormat: 'application/swe+json',
+        tls: secure
+    }), []);
+
+    const raavakPointMarker = useMemo(() => new PointMarkerLayer({
+            labelOffset: [0, -30],
+            getLocation: {
+                dataSourceIds: [raavakLocDataSource.getId()],
+                handler: function (rec: any) {
+                    return {
+                        x: rec.location.lon,
+                        y: rec.location.lat,
+                        z: rec.location.alt
+                    }
+                }
+
+            },
+            getOrientation: {
+                dataSourceIds: [raavakLocDataSource.getId()],
+                handler: function (rec: any) {
+                    return {
+                        heading: rec.att.heading - 90.0
+                    }
+                }
+            },
+            icon: 'images/uav.glb',
+            iconSize: [32, 64],
+            name: "RAAVAK Location",
+            label: "RAAVAK",
+            iconScale: .05,
+            color: '#FF8000'
+        }), [raavakLocDataSource]);
+
+
+// -------------------------------------------------------------------------
+
     //#region Data Sources
     /**
      * UAV Location data source
-     * 
+     *
      * @remarks This data source will be used by the point marker layer to display the UAV's location.
      */
     const uavLocDataSource = useMemo(() => new SweApi("UAV-Location", {
@@ -60,7 +115,7 @@ export default function App() {
 
     /**
      * UAV Attitude data source
-     * 
+     *
      * @remarks This data source will be used by the point marker layer to display the UAV's orientation.
      */
     const uavAttitudeDataSource = useMemo(() => new SweApi("UAV-Attitude", {
@@ -75,7 +130,7 @@ export default function App() {
 
     /**
      * UAV Video data source
-     * 
+     *
      * @remarks This data source will be used by the video view to display the UAV's video stream.
      */
     const uavVideoDataSource = useMemo(() => new SweApi("UAV-Video", {
@@ -91,7 +146,7 @@ export default function App() {
 
     /**
      * UAV Field of Regard data source
-     * 
+     *
      * @remarks This data source will be used by the bounded draping layer to display the UAV's field of regard.
      */
     const uavForDataSource = useMemo(() => new SweApi("UAV-FOR", {
@@ -106,23 +161,20 @@ export default function App() {
 
     /**
      * Data Sources
-     * 
+     *
      * @remarks This array contains all the data sources that will be used by the master time controller.
      */
     const dataSources = useMemo(() => {
         return [
-            uavLocDataSource,
-            uavAttitudeDataSource,
-            uavVideoDataSource,
-            uavForDataSource
+            oshPTZVideoSource
         ];
-    }, [uavLocDataSource, uavAttitudeDataSource, uavVideoDataSource, uavForDataSource]);
+    }, [oshPTZVideoSource]);
     //#endregion
 
     //#region Layers
     /**
      * UAV Point Marker Layer
-     * 
+     *
      * @remarks This layer will be used by the Cesium view to display the UAV's location and orientation.
      */
     const uavPointMarker = useMemo(() => new PointMarkerLayer({
@@ -156,7 +208,7 @@ export default function App() {
 
     /**
      * Bounded Draping Layer
-     * 
+     *
      * @remarks This layer will be used by the Cesium view to display the UAV's field of regard.
      */
     const boundedDrapingLayer = useMemo(() => new PolygonLayer({
@@ -179,24 +231,25 @@ export default function App() {
     }), [uavForDataSource]);
 
     /**
-     * UAV Video Data Layer
-     * 
-     * @remarks This layer will be used by the video view to display the UAV's video stream.
+     * Video Data Layer
+     *
+     * @remarks This layer will be used by the video view to display a video stream.
      */
     const videoDataLayer = useMemo(() => new VideoDataLayer({
-        dataSourceId: [uavVideoDataSource.getId()],
+        dataSourceId: [oshPTZVideoSource.getId()],
         getFrameData: (rec: any) => {
             return rec.img
         },
         getTimestamp: (rec: any) => {
-            return rec.timestamp
+            return rec.time
         }
-    }), [uavVideoDataSource]);
+    }), [oshPTZVideoSource]);
+    oshPTZVideoSource.connect();
     //#endregion
 
     /**
      * Master Time Controller
-     * 
+     *
      * @remarks This object will synchronize all the data sources and control the replay speed.
      */
     const masterTimeController = useMemo(() => new DataSynchronizer({
@@ -211,18 +264,72 @@ export default function App() {
         uavPointMarker.props.description = "UAV UAS";
     }, [uavPointMarker])
 
-    // Create the video view with the UAV video data layer
+//     // Create the video view with the UAV video data layer
+//     useEffect(() => {
+//         const videoView = new VideoView({
+//             container: videoContainer.current.id,
+//             css: 'osh ptz',
+//             name: "OSH PTZ Video",
+//             framerate: 25,
+//             showTime: false,
+//             showStats: false,
+//             layers: [videoDataLayer]
+//         });
+//     }, [])
+
+    // popup window for ptz video
     useEffect(() => {
-        const videoView = new VideoView({
-            container: videoContainer.current.id,
-            css: 'video-h264',
-            name: "UAV Video",
+        const ptzWindow = window.open(
+            '',
+            'PTZVideoWindow',
+            'width=640,height=480,resizable,scrollbars'
+        );
+
+        if (!ptzWindow) {
+            console.error("PTZ Popup blocked!");
+            return;
+        }
+    ptzWindow.document.write(`
+        <html>
+          <head>
+            <title>OSH PTZ Video</title>
+            <style>
+              body {
+                margin: 0;
+                padding: 0;
+                background: black;
+              }
+              #videoContainer {
+                width: 100%;
+                height: 100%;
+              }
+            </style>
+          </head>
+          <body>
+            <div id="videoContainer"></div>
+          </body>
+        </html>
+      `);
+
+      ptzWindow.document.close();
+
+      // Wait a tick for DOM to be ready in the popup
+      setTimeout(() => {
+        const ptzVideoContainer = ptzWindow.document.getElementById('videoContainer');
+        if (ptzVideoContainer) {
+          new VideoView({
+            container: ptzVideoContainer.id,
+            css: 'osh ptz',
+            name: "OSH PTZ Video",
             framerate: 25,
-            showTime: false,
-            showStats: false,
+            showTime: true,
+            showStats: true,
             layers: [videoDataLayer]
-        });
-    }, [])
+          });
+        }
+      }, 100);
+
+    }, [videoDataLayer]);
 
     // Create the Cesium view with the UAV point marker and bounded draping layers
     useEffect(() => {

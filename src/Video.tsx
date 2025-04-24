@@ -18,6 +18,8 @@ export default function Video(){
     const responseFormat = 'application/swe+binary'
 
     const oshVidId = "k992mhd5jr7ri";
+    const misbVidId = "c2u1058huoehq";
+    const adVidId = "aljvakc6kqtk2";
 
     const oshPTZVideoSource = new SweApi('OSH-PTZ-Video-Camera', {
         protocol: "wss",
@@ -26,6 +28,28 @@ export default function Video(){
         tls: secure,
         startTime: "2024-04-25T15:43:53.006Z",
         endTime: "2024-04-25T16:43:53.006Z",
+        mode: Mode.REPLAY,
+        responseFormat: responseFormat,
+    });
+
+    const MISBVideoSource = new SweApi('PUMA-MISB-Video-Camera', {
+        protocol: "wss",
+        endpointUrl: server,
+        resource: `/datastreams/${misbVidId}/observations`,
+        tls: secure,
+        startTime: "2024-04-24T17:13:00.604666748Z",
+        endTime: "2024-04-25T18:48:41.60557788Z",
+        mode: Mode.REPLAY,
+        responseFormat: responseFormat,
+    });
+
+    const androidVideoSource = new SweApi('Android-Camera-H264', { // doesnt show anything?
+        protocol: "wss",
+        endpointUrl: server,
+        resource: `/datastreams/${adVidId}/observations`,
+        tls: secure,
+        startTime: "2024-04-25T16:29:44.176Z",
+        endTime: "2024-04-25T16:29:44.323Z",
         mode: Mode.REPLAY,
         responseFormat: responseFormat,
     });

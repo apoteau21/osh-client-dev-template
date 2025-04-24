@@ -1,21 +1,18 @@
-import React, {useEffect, useMemo, useRef, useState} from "react";
-import { Cartesian3, Ion, SceneMode, Terrain, } from "@cesium/engine";
+import React, {useEffect, useMemo, useRef} from "react";
+import {Cartesian3, Ion, SceneMode, Terrain} from "@cesium/engine";
 import "@cesium/engine/Source/Widget/CesiumWidget.css";
 import CesiumView from "osh-js/source/core/ui/view/map/CesiumView.js";
 import DataSynchronizer from 'osh-js/source/core/timesync/DataSynchronizer';
-import { Mode } from "osh-js/source/core/datasource/Mode";
+import {Mode} from "osh-js/source/core/datasource/Mode";
 import PointMarkerLayer from "osh-js/source/core/ui/layer/PointMarkerLayer";
 import PolygonLayer from "osh-js/source/core/ui/layer/PolygonLayer";
 import SweApi from "osh-js/source/core/datasource/sweapi/SweApi.datasource";
-import VideoDataLayer from "osh-js/source/core/ui/layer/VideoDataLayer";
-import VideoView from "osh-js/source/core/ui/view/video/VideoView";
 import LineLayer from "osh-js/source/core/ui/layer/LineLayer.js";
-import Layer from "osh-js/source/core/ui/layer/Layer.js";
 
-export default function Map(){
+export default function Map() {
     // A Cesium Ion access token can be obtained for free from https://ion.cesium.com/.
     // Do not commit your access token to a public repository.
-    Ion.defaultAccessToken = '';
+    Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlNTJkMGE5Mi01MGEzLTQ3YjYtYmMwYy05NjM3M2I5MDUzMTYiLCJpZCI6MzIzODMsImlhdCI6MTcyNDE4MDQ5NH0.d5BzXnhx7eNW7D7ebrVLgsCqEo2WoTEMQHvgPbTw8rY';
 
     const server = "osh-dev.botts-inc.com:8443/sensorhub/api";
     const secure = true
@@ -29,6 +26,7 @@ export default function Map(){
     const krId = "cbmgng06q8hfi";
     const misbLocId = "g3064a5bi43rk";
     const misbAttId = "1gqctlan3jtgm";
+    const misbGeoImgId = "fhjv85sb636lu";
     const sbId = "no2l5otn10sl6";
     const sbAOAId = "6q2d64tm3tjnq";
     const oshLocId = "kqka25snd5o8c";
@@ -36,6 +34,7 @@ export default function Map(){
     const adEulerId = "2c1ev1nm3gkf4";
     const adTPId = "gmq44r1ovilum";
     const rvId = "716h9tnqjtq6a";
+    const rvHeartId = "j6k1e1tg38g5i";
 
     // ------------------------------ DATA SOURCES --------------------------------
 
@@ -55,12 +54,12 @@ export default function Map(){
     const bkAOADataSource = useMemo(() => new SweApi('Beast-Kit-AOA', { // lines of bearing
         protocol: "wss",
         endpointUrl: server,
-        resource:  `/datastreams/${bkAOAId}/observations`,
+        resource: `/datastreams/${bkAOAId}/observations`,
         tls: secure,
         startTime: "2024-04-23T12:23:28.9Z",
         endTime: "2024-04-25T18:18:15Z",
         mode: Mode.REPLAY,
- //       responseFormat: 'application/swe+binary',
+        //       responseFormat: 'application/swe+binary',
     }), []);
 
     // kraken --------------------------------------------
@@ -76,21 +75,9 @@ export default function Map(){
 //         responseFormat: 'application/swe+binary',
     }), []);
 
-//     no data?? theres two kraken aoa databases and neither have any data....
-//     const krakenAOADataSource = useMemo(() => new SweApi('Kraken-AOA', { // lines of bearing
-//         protocol: "wss",
-//         endpointUrl: server,
-//         resource: '/datastreams/[replace]/observations',
-//         tls: secure,
-//         startTime: "",
-//         endTime: "",
-//         mode: Mode.REPLAY,
-//         responseFormat: 'application/swe+binary',
-//     }), []);
-
     // misb uas cpi 24 ------------------------------------------
 
-    const misbLocDataSource = useMemo(() => new SweApi('PUMA-MISB-Sensor-Location',{ // works
+    const misbLocDataSource = useMemo(() => new SweApi('PUMA-MISB-Sensor-Location', { // works
         protocol: "wss",
         endpointUrl: server,
         resource: `/datastreams/${misbLocId}/observations`,
@@ -101,7 +88,7 @@ export default function Map(){
 //         responseFormat: 'application/swe+binary',
     }), []);
 
-    const misbAttDataSource = useMemo(() => new SweApi('PUMA-MISB-Attitude',{ // works
+    const misbAttDataSource = useMemo(() => new SweApi('PUMA-MISB-Attitude', { // works
         protocol: "wss",
         endpointUrl: server,
         resource: `/datastreams/${misbAttId}/observations`,
@@ -112,9 +99,20 @@ export default function Map(){
 //         responseFormat: 'application/swe+binary',
     }), []);
 
+    const misbGeoDataSource = useMemo(() => new SweApi('PUMA-MISB-Geo-Referenced-Image', { // works
+        protocol: "wss",
+        endpointUrl: server,
+        resource: `/datastreams/${misbGeoImgId}/observations`,
+        tls: secure,
+        startTime: "2024-04-24T18:55:23.618Z",
+        endTime: "2024-04-25T14:42:49.741Z",
+        mode: Mode.REPLAY,
+//         responseFormat: 'application/swe+binary',
+    }), []);
+
     // skybeast ------------------------------------------
 
-    const sbGPSDataSource = useMemo(() => new SweApi('Sky-Beast-GPS',{ // works
+    const sbGPSDataSource = useMemo(() => new SweApi('Sky-Beast-GPS', { // works
         protocol: "wss",
         endpointUrl: server,
         resource: `/datastreams/${sbId}/observations`,
@@ -154,7 +152,7 @@ export default function Map(){
 
     const androidGPSDataSource = useMemo(() => new SweApi('SOS-Android-GPS', { // works
         protocol: "wss",
-        endpointUrl:  server,
+        endpointUrl: server,
         resource: `/datastreams/${adId}/observations`,
         tls: secure,
         startTime: "2024-04-25T17:00:23.463Z",
@@ -200,27 +198,38 @@ export default function Map(){
         tls: secure
     }), []);
 
+    const raavakHeartDataSource = useMemo(() => new SweApi("RAAVAK-Heartbeat", {
+        protocol: "wss",
+        endpointUrl: server,
+        resource: `/datastreams/${rvHeartId}/observations`,
+        startTime: "2024-04-24T14:33:09Z",
+        endTime: "2024-04-24T14:33:54Z",
+        mode: Mode.REPLAY,
+        responseFormat: 'application/swe+binary',
+        tls: secure
+    }), []);
+
     // ------------------------------- POINT MARKERS ----------------------------------------
 
     const bkPointMarker = useMemo(() => new PointMarkerLayer({
-            labelOffset: [0, -30],
-            getLocation: {
-                dataSourceIds: [bkGPSDataSource.getId()],
-                handler: function (rec: any) {
-                    return {
-                        x: rec.location.lon,
-                        y: rec.location.lat,
-                        z: rec.location.alt
-                    }
+        labelOffset: [0, -30],
+        getLocation: {
+            dataSourceIds: [bkGPSDataSource.getId()],
+            handler: function (rec: any) {
+                return {
+                    x: rec.location.lon,
+                    y: rec.location.lat,
+                    z: rec.location.alt
                 }
-            },
-            icon: 'images/uav.glb',
-            iconSize: [32, 64],
-            name: "Beast Kit GPS Location",
-            label: "Beast Kit GPS",
-            iconScale: .05,
-            color: '#4287f5', // these colors do not work ......
-        }), [bkGPSDataSource]);
+            }
+        },
+        icon: 'images/uav.glb',
+        iconSize: [32, 64],
+        name: "Beast Kit GPS Location",
+        label: "Beast Kit GPS",
+        iconScale: .05,
+        color: '#4287f5', // these colors do not work ......
+    }), [bkGPSDataSource]);
 
     const krPointMarker = useMemo(() => new PointMarkerLayer({
         labelOffset: [0, -40],
@@ -293,7 +302,7 @@ export default function Map(){
     }), [sbGPSDataSource]);
 
     const oshPTZPointMarker = useMemo(() => new PointMarkerLayer({
-        //labelOffset: [0, -30],
+        labelOffset: [0, -30],
         getLocation: {
             dataSourceIds: [oshPTZLocDataSource.getId()],
             handler: function (rec: any) {
@@ -323,7 +332,6 @@ export default function Map(){
                     z: rec.location.alt
                 }
             }
-
         },
         getOrientation: {
             dataSourceIds: [androidEulerDataSource.getId()],
@@ -339,7 +347,7 @@ export default function Map(){
         label: "Android GPS",
         iconScale: .05,
         color: '#FF8000'
-        }), [androidGPSDataSource]);
+    }), [androidGPSDataSource]);
 
     const adTrupulsePointMarker = useMemo(() => new PointMarkerLayer({
         labelOffset: [0, -30],
@@ -381,51 +389,98 @@ export default function Map(){
         color: '#FF8000',
     }), [raavakLocDataSource]);
 
+    const raavakHeartPointMarker = useMemo(() => new PointMarkerLayer({
+        labelOffset: [0, -30],
+        getLocation: {
+            dataSourceIds: [raavakHeartDataSource.getId()],
+            handler: function (rec: any) {
+                return {
+                    x: rec.location.lon,
+                    y: rec.location.lat,
+                    z: rec.location.alt
+                }
+            }
+        },
+        icon: 'images/uav.glb',
+        iconSize: [32, 64],
+        name: "RAAVAK Heartbeat",
+        label: "RAAVAK Heartbeat",
+        iconScale: .05,
+        color: '#FF8000',
+    }), [raavakHeartDataSource]);
+
     // ------------------------------ LINES OF BEARING --------------------------------
 
     let beastKitLOB = useMemo(() => new LineLayer({
-         getStartLocationAndBearing: (rec: any) => {
-             return {
-                 dataSourceIds: [bkAOADataSource.getId()],
-                 startLocation: {
-                     x: rec.location.lon,
-                     y: rec.location.lat,
-                     z: rec.location.alt,
-                },
-                bearing: rec['raw-lob'] * Math.PI / 180
-             }
-         },
-         icon: 'images/uav.glb',
-         iconSize: [32, 64],
-         name: "Beast Kit LOB",
-         label: "Beast Kit (LOB)",
-         iconScale: .05,
-         color: '#FF8000',
-         weight : 10,
-         opacity : .5,
+        getStartLocationAndBearing: {
+            dataSourceIds: [bkAOADataSource.getId()],
+            handler: function (rec: any) {
+                return {
+                    dataSourceIds: [bkAOADataSource.getId()],
+                    startLocation: {
+                        x: rec.location.lon,
+                        y: rec.location.lat,
+                        z: rec.location.alt,
+                    },
+                    bearing: rec['raw-lob'] * Math.PI / 180
+                }
+            }
+        },
+        icon: 'images/uav.glb',
+        iconSize: [32, 64],
+        name: "Beast Kit LOB",
+        label: "Beast Kit (LOB)",
+        iconScale: .05,
+        color: '#FF8000',
+        weight: 10,
+        opacity: .5,
     }), [bkAOADataSource]);
 
     let skyBeastLOB = useMemo(() => new LineLayer({
-         getStartLocationAndBearing: (rec: any) => {
-             return {
-                 dataSourceIds: [sbAOADataSource.getId()],
-                 startLocation: {
-                     x: rec.location.lon,
-                     y: rec.location.lat,
-                     z: rec.location.alt,
-                },
-                bearing: rec['raw-lob'] * Math.PI / 180
-             }
-         },
-         icon: 'images/uav.glb',
-         iconSize: [32, 64],
-         name: "Sky Beast LOB",
-         label: "Sky Beast (LOB)",
-         iconScale: .05,
-         color: '#FF8000',
-         weight : 10,
-         opacity : .5,
+        getStartLocationAndBearing: {
+            dataSourceIds: [sbAOADataSource.getId()],
+            handler: function (rec: any) {
+                return {
+                    startLocation: {
+                        x: rec.location.lon,
+                        y: rec.location.lat,
+                        z: rec.location.alt,
+                    },
+                    bearing: rec['raw-lob'] * Math.PI / 180
+                }
+            }
+        },
+        icon: 'images/uav.glb',
+        iconSize: [32, 64],
+        name: "Sky Beast LOB",
+        label: "Sky Beast (LOB)",
+        iconScale: .05,
+        color: '#FF8000',
+        weight: 10,
+        opacity: .5,
     }), [sbAOADataSource]);
+
+    // -------------------------------- BOUNDED DRAPING ------------------------------
+
+    const misbBoundedDraping = useMemo(() => new PolygonLayer({
+        opacity: .5,
+        clampToGround: true,
+        getVertices: {
+            dataSourceIds: [misbGeoDataSource.getId()],
+            handler: function (rec: any) {
+                return [
+                    rec.geoRef.ulc.lon,
+                    rec.geoRef.ulc.lat,
+                    rec.geoRef.llc.lon,
+                    rec.geoRef.llc.lat,
+                    rec.geoRef.lrc.lon,
+                    rec.geoRef.lrc.lat,
+                    rec.geoRef.urc.lon,
+                    rec.geoRef.urc.lat,
+                ];
+            }
+        },
+    }), [misbGeoDataSource]);
 
     // ------------------------------------------------------------------------------------------------
 
@@ -437,14 +492,14 @@ export default function Map(){
     const masterTimeController = useMemo(() => new DataSynchronizer({
         replaySpeed: 1,
         intervalRate: 5,
-        dataSources: [sbAOADataSource]
-    }), [sbAOADataSource]);
+        dataSources: [misbGeoDataSource]
+    }), [misbGeoDataSource]);
 
     // Create the Cesium view with the point markers & lines of bearing
     useEffect(() => {
         const cesiumView = new CesiumView({
             container: cesiumContainer.current.id,
-            layers: [skyBeastLOB],
+            layers: [misbBoundedDraping],
 
             options: {
                 viewerProps: {
@@ -480,16 +535,16 @@ export default function Map(){
 
         // Center the camera on given coordinates
         cesiumView.viewer.camera.flyTo({
-            destination: Cartesian3.fromDegrees(-81.67128902952935, 27.70690480206765, 10000)
+            destination: Cartesian3.fromDegrees(-81.50619000, 27.59587000, 10000)
         });
     }, [])
 
     // Start streaming
     useEffect(() => {
         masterTimeController.connect();
-    }, [])
+    }, [masterTimeController])
 
-    return(
+    return (
         <div id="left">
             <div id="cesium-container" ref={cesiumContainer}></div>
         </div>

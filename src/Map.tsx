@@ -12,7 +12,7 @@ import LineLayer from "osh-js/source/core/ui/layer/LineLayer.js";
 export default function Map() {
     // A Cesium Ion access token can be obtained for free from https://ion.cesium.com/.
     // Do not commit your access token to a public repository.
-    Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlNTJkMGE5Mi01MGEzLTQ3YjYtYmMwYy05NjM3M2I5MDUzMTYiLCJpZCI6MzIzODMsImlhdCI6MTcyNDE4MDQ5NH0.d5BzXnhx7eNW7D7ebrVLgsCqEo2WoTEMQHvgPbTw8rY';
+    Ion.defaultAccessToken = '';
 
     const server = "osh-dev.botts-inc.com:8443/sensorhub/api";
     const secure = true

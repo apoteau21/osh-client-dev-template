@@ -9,6 +9,7 @@ import PolygonLayer from "osh-js/source/core/ui/layer/PolygonLayer";
 import SweApi from "osh-js/source/core/datasource/sweapi/SweApi.datasource";
 import VideoDataLayer from "osh-js/source/core/ui/layer/VideoDataLayer";
 import VideoView from "osh-js/source/core/ui/view/video/VideoView";
+import Draggable, {DraggableCore} from 'react-draggable';
 
 export default function Video(){
 
@@ -43,22 +44,17 @@ export default function Video(){
         responseFormat: responseFormat,
     });
 
-    const androidVideoSource = new SweApi('Android-Camera-H264', { // doesnt show anything?
+    const androidVideoSource = new SweApi('Android-Camera-H264', {
         protocol: "wss",
         endpointUrl: server,
         resource: `/datastreams/${adVidId}/observations`,
         tls: secure,
         startTime: "2024-04-25T16:29:44.176Z",
-        endTime: "2024-04-25T16:29:44.323Z",
+        endTime: "2024-04-25T18:29:44.323Z",
         mode: Mode.REPLAY,
         responseFormat: responseFormat,
     });
 
-    /**
-     * Video Data Layer
-     *
-     * @remarks This layer will be used by the video view to display a video stream.
-     */
     const videoDataLayer = useMemo(() => new VideoDataLayer({
         dataSourceId: [oshPTZVideoSource.getId()],
         getFrameData: (rec: any) => {
@@ -69,36 +65,36 @@ export default function Video(){
         }
     }), [oshPTZVideoSource]);
 
-    /**
-     * Master Time Controller
-     *
-     * @remarks This object will synchronize all the data sources and control the replay speed.
-     */
     const masterTimeController = useMemo(() => new DataSynchronizer({
         replaySpeed: 1,
         intervalRate: 5,
         dataSources: [oshPTZVideoSource]
     }), [oshPTZVideoSource]);
 
-    const videoView = new VideoView({
-        container: "video-container",
-        css: 'video-h264',
-        name: "OSH PTZ Video",
-        framerate: 25,
-        showTime: false,
-        showStats: false,
-        layers: [videoDataLayer]
-    });
-
-    // Start streaming
     useEffect(() => {
+        new VideoView({
+            container: "osh-container",
+            css: 'video-h264',
+            name: "OSH PTZ Video",
+            framerate: 25,
+            showTime: false,
+            showStats: false,
+            layers: [videoDataLayer]
+        });
+
         masterTimeController.connect();
-    }, [])
+    }, []);
 
-    return(
+    return (
         <div id="right">
-            <div id="video-container" ref={videoContainer}></div>
+            <Draggable handle=".video-handle" defaultPosition={{ x: 0, y: 0 }}>
+                <div style={{ width: "480px", border: "1px solid #ccc", backgroundColor: "#000", position: "absolute", zIndex: 10 }}>
+                    <div className="video-handle" style={{ cursor: "move", backgroundColor: "#444", color: "#fff", padding: "8px" }}>
+                        OSH PTZ Video
+                    </div>
+                    <div id="osh-container" ref={videoContainer} style={{ width: "100%", height: "100%" }}></div>
+                </div>
+            </Draggable>
         </div>
-    )
-
+    );
 }

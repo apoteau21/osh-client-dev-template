@@ -10,16 +10,12 @@ import SweApi from "osh-js/source/core/datasource/sweapi/SweApi.datasource";
 import LineLayer from "osh-js/source/core/ui/layer/LineLayer.js";
 
 export default function Map() {
-    // A Cesium Ion access token can be obtained for free from https://ion.cesium.com/.
-    // Do not commit your access token to a public repository.
     Ion.defaultAccessToken = '';
 
     const server = "osh-dev.botts-inc.com:8443/sensorhub/api";
     const secure = true
 
     const cesiumContainer = useRef(null);
-
-    // data source ids -----------------------------------
 
     const bkId = "0raf5gs7iedgm";
     const bkAOAId = "orb73vatusoa2";
@@ -36,11 +32,7 @@ export default function Map() {
     const rvId = "716h9tnqjtq6a";
     const rvHeartId = "j6k1e1tg38g5i";
 
-    // ------------------------------ DATA SOURCES --------------------------------
-
-    // beast kit -----------------------------------------
-
-    const bkGPSDataSource = useMemo(() => new SweApi('Beast-Kit-GPS', { // works
+    const bkGPSDataSource = useMemo(() => new SweApi('Beast-Kit-GPS', {
         protocol: "wss",
         endpointUrl: server,
         resource: `/datastreams/${bkId}/observations`,
@@ -48,10 +40,9 @@ export default function Map() {
         startTime: "2024-04-23T12:23:18Z",
         endTime: "2024-04-25T18:18:15Z",
         mode: Mode.REPLAY,
-//         responseFormat: 'application/swe+binary',
     }), []);
 
-    const bkAOADataSource = useMemo(() => new SweApi('Beast-Kit-AOA', { // lines of bearing
+    const bkAOADataSource = useMemo(() => new SweApi('Beast-Kit-AOA', {
         protocol: "wss",
         endpointUrl: server,
         resource: `/datastreams/${bkAOAId}/observations`,
@@ -59,12 +50,9 @@ export default function Map() {
         startTime: "2024-04-23T12:23:28.9Z",
         endTime: "2024-04-25T18:18:15Z",
         mode: Mode.REPLAY,
-        //       responseFormat: 'application/swe+binary',
     }), []);
 
-    // kraken --------------------------------------------
-
-    const krakenGPSDataSource = useMemo(() => new SweApi('Kraken-GPS', { // works
+    const krakenGPSDataSource = useMemo(() => new SweApi('Kraken-GPS', {
         protocol: "wss",
         endpointUrl: server,
         resource: `/datastreams/${krId}/observations`,
@@ -72,12 +60,9 @@ export default function Map() {
         startTime: "2024-04-23T16:49:02Z",
         endTime: "2024-04-23T17:04:44Z",
         mode: Mode.REPLAY,
-//         responseFormat: 'application/swe+binary',
     }), []);
 
-    // misb uas cpi 24 ------------------------------------------
-
-    const misbLocDataSource = useMemo(() => new SweApi('PUMA-MISB-Sensor-Location', { // works
+    const misbLocDataSource = useMemo(() => new SweApi('PUMA-MISB-Sensor-Location', {
         protocol: "wss",
         endpointUrl: server,
         resource: `/datastreams/${misbLocId}/observations`,
@@ -85,10 +70,9 @@ export default function Map() {
         startTime: "2024-04-24T18:55:21.217Z",
         endTime: "2024-04-25T14:42:49.502Z",
         mode: Mode.REPLAY,
-//         responseFormat: 'application/swe+binary',
     }), []);
 
-    const misbAttDataSource = useMemo(() => new SweApi('PUMA-MISB-Attitude', { // works
+    const misbAttDataSource = useMemo(() => new SweApi('PUMA-MISB-Attitude', {
         protocol: "wss",
         endpointUrl: server,
         resource: `/datastreams/${misbAttId}/observations`,
@@ -96,10 +80,9 @@ export default function Map() {
         startTime: "2024-04-24T18:55:23.618Z",
         endTime: "2024-04-25T14:42:49.741Z",
         mode: Mode.REPLAY,
-//         responseFormat: 'application/swe+binary',
     }), []);
 
-    const misbGeoDataSource = useMemo(() => new SweApi('PUMA-MISB-Geo-Referenced-Image', { // works
+    const misbGeoDataSource = useMemo(() => new SweApi('PUMA-MISB-Geo-Referenced-Image', {
         protocol: "wss",
         endpointUrl: server,
         resource: `/datastreams/${misbGeoImgId}/observations`,
@@ -107,12 +90,9 @@ export default function Map() {
         startTime: "2024-04-24T18:55:23.618Z",
         endTime: "2024-04-25T14:42:49.741Z",
         mode: Mode.REPLAY,
-//         responseFormat: 'application/swe+binary',
     }), []);
 
-    // skybeast ------------------------------------------
-
-    const sbGPSDataSource = useMemo(() => new SweApi('Sky-Beast-GPS', { // works
+    const sbGPSDataSource = useMemo(() => new SweApi('Sky-Beast-GPS', {
         protocol: "wss",
         endpointUrl: server,
         resource: `/datastreams/${sbId}/observations`,
@@ -120,11 +100,9 @@ export default function Map() {
         startTime: "2024-04-24T16:51:56Z",
         endTime: "2024-04-25T18:21:19Z",
         mode: Mode.REPLAY,
-//         responseFormat: 'application/swe+binary',
     }), []);
 
-
-    const sbAOADataSource = useMemo(() => new SweApi('Sky-Beast-AOA', { // lines of bearing
+    const sbAOADataSource = useMemo(() => new SweApi('Sky-Beast-AOA', {
         protocol: "wss",
         endpointUrl: server,
         resource: `/datastreams/${sbAOAId}/observations`,
@@ -132,12 +110,9 @@ export default function Map() {
         startTime: "2024-04-25T12:36:53.5Z",
         endTime: "2024-04-25T18:18:15Z",
         mode: Mode.REPLAY,
-//        responseFormat: 'application/swe+binary',
     }), []);
 
-    // osh ptz ---------------------------------------------
-
-    const oshPTZLocDataSource = useMemo(() => new SweApi('OSH-PTZ-Location', { // works
+    const oshPTZLocDataSource = useMemo(() => new SweApi('OSH-PTZ-Location', {
         protocol: "wss",
         endpointUrl: server,
         resource: `/datastreams/${oshLocId}/observations`,
@@ -148,9 +123,7 @@ export default function Map() {
         responseFormat: 'application/swe+binary',
     }), []);
 
-    // sos android ----------------------------------------------
-
-    const androidGPSDataSource = useMemo(() => new SweApi('SOS-Android-GPS', { // works
+    const androidGPSDataSource = useMemo(() => new SweApi('SOS-Android-GPS', {
         protocol: "wss",
         endpointUrl: server,
         resource: `/datastreams/${adId}/observations`,
@@ -158,10 +131,9 @@ export default function Map() {
         startTime: "2024-04-25T17:00:23.463Z",
         endTime: "2024-04-25T17:27:06Z",
         mode: Mode.REPLAY,
-//        responseFormat: 'application/swe+binary',
     }), []);
 
-    const androidEulerDataSource = useMemo(() => new SweApi('SOS-Android-Euler', { // works
+    const androidEulerDataSource = useMemo(() => new SweApi('SOS-Android-Euler', {
         protocol: "wss",
         endpointUrl: server,
         resource: `/datastreams/${adEulerId}/observations`,
@@ -169,12 +141,9 @@ export default function Map() {
         startTime: '2024-04-25T17:50:38.372Z',
         endTime: '2024-04-25T18:04:07.186Z',
         mode: Mode.REPLAY,
-//        responseFormat: 'application/swe+binary',
     }), []);
 
-    // android trupulse ---------------------------
-
-    const androidTrupulseDataSource = useMemo(() => new SweApi('SOS-Android-Trupulse', { // works
+    const androidTrupulseDataSource = useMemo(() => new SweApi('SOS-Android-Trupulse', {
         protocol: "wss",
         endpointUrl: server,
         resource: `/datastreams/${adTPId}/observations`,
@@ -185,9 +154,7 @@ export default function Map() {
         responseFormat: 'application/swe+binary',
     }), []);
 
-    // raavak --------------------------------------------
-
-    const raavakLocDataSource = useMemo(() => new SweApi("RAAVAK-Location", { // works
+    const raavakLocDataSource = useMemo(() => new SweApi("RAAVAK-Location", {
         protocol: "wss",
         endpointUrl: server,
         resource: `/datastreams/${rvId}/observations`,
@@ -205,11 +172,8 @@ export default function Map() {
         startTime: "2024-04-24T14:33:09Z",
         endTime: "2024-04-24T14:33:54Z",
         mode: Mode.REPLAY,
-        responseFormat: 'application/swe+binary',
         tls: secure
     }), []);
-
-    // ------------------------------- POINT MARKERS ----------------------------------------
 
     const bkPointMarker = useMemo(() => new PointMarkerLayer({
         labelOffset: [0, -30],
@@ -228,7 +192,7 @@ export default function Map() {
         name: "Beast Kit GPS Location",
         label: "Beast Kit GPS",
         iconScale: .05,
-        color: '#4287f5', // these colors do not work ......
+        color: '#FF8000',
     }), [bkGPSDataSource]);
 
     const krPointMarker = useMemo(() => new PointMarkerLayer({
@@ -248,7 +212,7 @@ export default function Map() {
         name: "Kraken GPS Location",
         label: "Kraken GPS",
         iconScale: .05,
-        color: '#f542e6',
+        color: '#FF8000',
     }), [krakenGPSDataSource]);
 
     const misbPointMarker = useMemo(() => new PointMarkerLayer({
@@ -293,12 +257,12 @@ export default function Map() {
                 }
             }
         },
-        icon: 'images/drone.glb',
+        icon: 'images/uav.glb',
         iconSize: [32, 64],
         name: "Sky Beast GPS Location",
         label: "Sky Beast GPS",
         iconScale: .05,
-        color: '#f57542',
+        color: '#FF8000',
     }), [sbGPSDataSource]);
 
     const oshPTZPointMarker = useMemo(() => new PointMarkerLayer({
@@ -341,7 +305,7 @@ export default function Map() {
                 }
             }
         },
-        icon: 'images/drone.glb',
+        icon: 'images/uav.glb',
         iconSize: [32, 64],
         name: "Android GPS Location",
         label: "Android GPS",
@@ -366,7 +330,7 @@ export default function Map() {
         name: "Android Trupulse Location",
         label: "Android Trupulse",
         iconScale: .05,
-        color: '#f57542',
+        color: '#FF8000',
     }), [androidTrupulseDataSource]);
 
     const raavakPointMarker = useMemo(() => new PointMarkerLayer({
@@ -409,8 +373,6 @@ export default function Map() {
         color: '#FF8000',
     }), [raavakHeartDataSource]);
 
-    // ------------------------------ LINES OF BEARING --------------------------------
-
     let beastKitLOB = useMemo(() => new LineLayer({
         getStartLocationAndBearing: {
             dataSourceIds: [bkAOADataSource.getId()],
@@ -431,7 +393,7 @@ export default function Map() {
         name: "Beast Kit LOB",
         label: "Beast Kit (LOB)",
         iconScale: .05,
-        color: '#FF8000',
+        color: '#f57542',
         weight: 10,
         opacity: .5,
     }), [bkAOADataSource]);
@@ -460,8 +422,6 @@ export default function Map() {
         opacity: .5,
     }), [sbAOADataSource]);
 
-    // -------------------------------- BOUNDED DRAPING ------------------------------
-
     const misbBoundedDraping = useMemo(() => new PolygonLayer({
         opacity: .5,
         clampToGround: true,
@@ -482,47 +442,32 @@ export default function Map() {
         },
     }), [misbGeoDataSource]);
 
-    // ------------------------------------------------------------------------------------------------
-
-    /**
-     * Master Time Controller
-     *
-     * @remarks This object will synchronize all the data sources and control the replay speed.
-     */
     const masterTimeController = useMemo(() => new DataSynchronizer({
         replaySpeed: 1,
         intervalRate: 5,
-        dataSources: [misbGeoDataSource]
-    }), [misbGeoDataSource]);
+        dataSources: [bkGPSDataSource]
+    }), [bkGPSDataSource]);
 
-    // Create the Cesium view with the point markers & lines of bearing
     useEffect(() => {
         const cesiumView = new CesiumView({
             container: cesiumContainer.current.id,
-            layers: [misbBoundedDraping],
+            layers: [bkPointMarker],
 
             options: {
                 viewerProps: {
                     terrain: Terrain.fromWorldTerrain(),
                     sceneMode: SceneMode.SCENE3D,
-                    // infoBox: false,
-                    // geocoder: false,
                     timeline: false,
                     animation: false,
                     homeButton: false,
                     scene3DOnly: true,
-                    // baseLayerPicker: false,
-                    // sceneModePicker: false,
                     fullscreenButton: false,
-                    // projectionPicker: false,
-                    // selectionIndicator: false,
                     navigationHelpButton: true,
                     navigationInstructionsInitiallyVisible: true
                 }
             }
         });
 
-        // Set the imagery and terrain providers
         const baseLayerPicker = cesiumView.viewer.baseLayerPicker;
 
         const imageryProviders = baseLayerPicker.viewModel.imageryProviderViewModels;
@@ -533,13 +478,11 @@ export default function Map() {
         baseLayerPicker.viewModel.selectedTerrain =
             terrainProviders.find((terrainProviders: any) => terrainProviders.name === "Cesium World Terrain");
 
-        // Center the camera on given coordinates
         cesiumView.viewer.camera.flyTo({
-            destination: Cartesian3.fromDegrees(-81.50619000, 27.59587000, 10000)
+            destination: Cartesian3.fromDegrees(-81.350848, 27.646529, 10000)
         });
     }, [])
 
-    // Start streaming
     useEffect(() => {
         masterTimeController.connect();
     }, [masterTimeController])

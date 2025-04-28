@@ -14,24 +14,16 @@
  */
 
 import React, { useEffect, useMemo, useRef } from "react";
-import { Cartesian3, Ion, SceneMode, Terrain, } from "@cesium/engine";
-import "@cesium/engine/Source/Widget/CesiumWidget.css";
-import CesiumView from "osh-js/source/core/ui/view/map/CesiumView.js";
-import DataSynchronizer from 'osh-js/source/core/timesync/DataSynchronizer';
-import { Mode } from "osh-js/source/core/datasource/Mode";
-import PointMarkerLayer from "osh-js/source/core/ui/layer/PointMarkerLayer";
-import PolygonLayer from "osh-js/source/core/ui/layer/PolygonLayer";
-import SweApi from "osh-js/source/core/datasource/sweapi/SweApi.datasource";
-import VideoDataLayer from "osh-js/source/core/ui/layer/VideoDataLayer";
-import VideoView from "osh-js/source/core/ui/view/video/VideoView";
 import Map from "./Map"
 import Video from "./Video"
 
 export default function App() {
+
     return (
         <div id="container">
             <Map/>
-
+            <Video/>
         </div>
     );
+
 };

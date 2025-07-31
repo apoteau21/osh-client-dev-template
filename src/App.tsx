@@ -30,8 +30,8 @@ export default function App() {
       protocol: "ws",
       endpointUrl: server,
       resource: `/datastreams/${sensorId}/observations`,
-      startTime: "now",
-      endTime: "2055-01-01Z",
+    //   startTime: "now",
+    //   endTime: "2055-01-01Z",
       mode: Mode.REAL_TIME,
     });
 
@@ -39,8 +39,9 @@ export default function App() {
     let temperatureCurve = new CurveLayer({
       dataSourceId: dht22DataSource.id,
       getValues: (rec: any) => {
+        console.log(rec);
         return {
-          x: new Date().toISOString(),
+          x: rec.timestamp,
           y: rec.temperature,
         };
       },
@@ -56,7 +57,7 @@ export default function App() {
         dataSourceId: dht22DataSource.id,
         getValues: (rec: any) => {
           return {
-            x: new Date().toISOString(),
+            x: rec.timestamp,
             y: rec.humidity,
           };
         },

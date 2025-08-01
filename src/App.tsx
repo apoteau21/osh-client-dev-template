@@ -18,10 +18,11 @@ import { Mode } from "osh-js/source/core/datasource/Mode";
 import SweApi from "osh-js/source/core/datasource/sweapi/SweApi.datasource";
 import ChartJsView from "osh-js/source/core/ui/view/chart/ChartJsView.js";
 import CurveLayer from "osh-js/source/core/ui/layer/CurveLayer.js";
-import { EventType } from "osh-js/source/core/event/EventType";
+import { OSH_API_HOST } from "./config";
 
 export default function App() {
-  const server = "23.28.235.27:8181/sensorhub/api";
+  // Endpoint URL and sensor ID values
+  const server = OSH_API_HOST;
   const sensorId = "oa3ogh84spqo0";
 
   useEffect(() => {
@@ -30,8 +31,6 @@ export default function App() {
       protocol: "ws",
       endpointUrl: server,
       resource: `/datastreams/${sensorId}/observations`,
-    //   startTime: "now",
-    //   endTime: "2055-01-01Z",
       mode: Mode.REAL_TIME,
     });
 
@@ -39,6 +38,7 @@ export default function App() {
     let temperatureCurve = new CurveLayer({
       dataSourceId: dht22DataSource.id,
       getValues: (rec: any) => {
+        console.log("Temperature value:");
         console.log(rec);
         return {
           x: rec.timestamp,
@@ -54,24 +54,26 @@ export default function App() {
 
     // Define humidity curve layer
     let humidityCurve = new CurveLayer({
-        dataSourceId: dht22DataSource.id,
-        getValues: (rec: any) => {
-          return {
-            x: rec.timestamp,
-            y: rec.humidity,
-          };
-        },
-        lineColor: "rgba(0, 219, 44, 0.5)",
-        fill: true,
-        backgroundColor: "rgba(169,212,255,0.5)",
-        maxValues: 25,
-        name: "Humidity (%)",
-      });
+      dataSourceId: dht22DataSource.id,
+      getValues: (rec: any) => {
+        console.log("Humidity value:");
+        console.log(rec);
+        return {
+          x: rec.timestamp,
+          y: rec.humidity,
+        };
+      },
+      lineColor: "rgba(0, 219, 44, 0.5)",
+      fill: true,
+      backgroundColor: "rgba(169,212,255,0.5)",
+      maxValues: 25,
+      name: "Humidity (%)",
+    });
 
-    // Chart setup
-    let chartView = new ChartJsView({
+    // TEMPERATURE Chart setup
+    let temperatureChartView = new ChartJsView({
       container: "temperature-container",
-      layers: [temperatureCurve, humidityCurve],
+      layers: [temperatureCurve],
       css: "chart-view",
       options: {
         scales: {
@@ -89,21 +91,40 @@ export default function App() {
       },
     });
 
-    // dht22DataSource.subscribe(
-    //   (message: any) => {
-    //     let messageValues = message.values[0].data;
-    //     console.log(message);
-    //   },
-    //   [EventType.DATA]
-    // );
+    // HUMIDITY Chart setup
+    let humidityChartView = new ChartJsView({
+      container: "humidity-container",
+      layers: [humidityCurve],
+      css: "chart-view",
+      options: {
+        scales: {
+          y: {
+            title: {
+              display: true,
+              text: "Humidity (&)",
+              padding: 20,
+            },
+          },
+        },
+      },
+      datasetOptions: {
+        tension: 0.2,
+      },
+    });
 
     dht22DataSource.connect();
   }, []);
 
   return (
-    <div
-      id="temperature-container"
-      style={{ width: "100%", height: "90%", zIndex: 5 }}
-    ></div>
+    <div style={{ display: "flex", height: "100%", margin: "2%" }}>
+      <div
+        id="temperature-container"
+        style={{ width: "50%", height: "90%" }}
+      ></div>
+      <div
+        id="humidity-container"
+        style={{ width: "50%", height: "90%" }}
+      ></div>
+    </div>
   );
 }

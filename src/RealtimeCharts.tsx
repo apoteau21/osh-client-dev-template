@@ -15,36 +15,26 @@
 
 import React, { useEffect } from "react";
 import { Mode } from "osh-js/source/core/datasource/Mode";
+import SweApi from "osh-js/source/core/datasource/sweapi/SweApi.datasource";
 import ChartJsView from "osh-js/source/core/ui/view/chart/ChartJsView.js";
 import CurveLayer from "osh-js/source/core/ui/layer/CurveLayer.js";
 import DataSynchronizer from "osh-js/source/core/timesync/DataSynchronizer";
 import ConSysApi from "osh-js/source/core/datasource/consysapi/ConSysApi.datasource";
 import { OSH_API_HOST } from "./config";
 
-export default function App() {
+export default function RealtimeCharts() {
   // Endpoint URL and sensor ID values
   const server = OSH_API_HOST;
   const sensorId = "oa3ogh84spqo0";
 
   useEffect(() => {
-    // let dht22DataSource = new SweApi("DHT22", {
-    //   id: sensorId,
-    //   protocol: "ws",
-    //   endpointUrl: server,
-    //   resource: `/datastreams/${sensorId}/observations`,
-    //   mode: Mode.REAL_TIME,
-    // });
-
     let dht22DataSource = new ConSysApi("DHT22", {
-        id: sensorId,
-        protocol: "ws",
-        endpointUrl: server,
-        resource: `/datastreams/${sensorId}/observations`,
-        startTime: "2025-08-01T15:41:49.989Z",
-        endTime: "2025-08-04T19:45:15.919Z",
-        mode: Mode.REPLAY,
+      id: sensorId,
+      protocol: "ws",
+      endpointUrl: server,
+      resource: `/datastreams/${sensorId}/observations`,
+      mode: Mode.REAL_TIME,
     });
-
 
     // Define temperature curve layer
     let temperatureCurve = new CurveLayer({
@@ -80,7 +70,7 @@ export default function App() {
         name: "Humidity (%)",
     });
 
-    // Temperature Chart setup
+    // Temperature chart setup
     let temperatureChartView = new ChartJsView({
         container: "temperature-container",
         layers: [temperatureCurve],
@@ -101,7 +91,7 @@ export default function App() {
         },
     });
 
-    // Humidity Chart setup
+    // Humidity chart setup
     let humidityChartView = new ChartJsView({
         container: "humidity-container",
         layers: [humidityCurve],
@@ -122,16 +112,7 @@ export default function App() {
         },
     });
 
-    // dht22DataSource.connect();
-    let dataSynchronizer = new DataSynchronizer({
-        replaySpeed: 10.0,
-        startTime: "2025-08-01T15:41:49.989Z",
-        endTime: "2025-08-04T19:45:15.919Z",
-        dataSources: [dht22DataSource],
-    });
-    dataSynchronizer.connect();
-
-    //dht22DataSource.connect();
+    dht22DataSource.connect();
   }, []);
 
   return (

@@ -23,24 +23,35 @@ import { EventType } from "osh-js/source/core/event/EventType";
 import { OSH_API_HOST } from "./config";
 
 // Slider imports
-import { Box, IconButton, Portal, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Grid,
+  IconButton,
+  Portal,
+  Stack,
+  Typography,
+} from "@mui/material";
 import Slider from "@mui/material/Slider";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import PauseRoundedIcon from "@mui/icons-material/PauseRounded";
 import CircularProgress from "@mui/material/CircularProgress";
+import { grey } from "@mui/material/colors";
 
 /**
  * Format timestamp as LocaleTimeString
  * @param timestamp
  * @returns
  */
-export const formatTime = (timestamp: number): string => {
-  const date = new Date(timestamp);
-  return date.toLocaleTimeString([], {
+export const formatTime = (timestamp: number): string[] => {
+  const obj = new Date(timestamp);
+  const date = obj.toLocaleDateString("en-US");
+  const time = obj.toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
   });
+
+  return [date, time];
 };
 
 export default function ReplayCharts() {
@@ -48,38 +59,69 @@ export default function ReplayCharts() {
   const server = OSH_API_HOST;
   const sensorId = "oa3ogh84spqo0";
 
-  // Time controller states
-  const [isPlaying, setIsPlaying] = useState<boolean>(true); // Update to false to start paused
-  const [minTime, setMinTime] = useState<number | null>(null);
-  const [maxTime, setMaxTime] = useState<number | null>(null);
-  const [currentTime, setCurrentTime] = useState<number | null>(null);
-  const [syncTime, setSyncTime] = useState<number | null>(null);
-  const [isScrubbing, setIsScrubbing] = useState<boolean>(false);
-
   // Time range values
   const startTime = "2025-08-01T15:41:49.989Z";
   const endTime = "2025-08-06T18:07:57Z";
+  const minDistance = 300000; // 5 minute minimum distance
+
+  // Time controller states
+  const [currentRange, setCurrentRange] = useState<number[] | null>(null); // Values used for current time controller range
+  const [isPlaying, setIsPlaying] = useState<boolean>(true);
+  const [minTime, setMinTime] = useState<number | null>(null);
+  const [maxTime, setMaxTime] = useState<number | null>(null);
+  const [currentTime, setCurrentTime] = useState<number | null>(null); // Value used to display current time
+  const [syncTime, setSyncTime] = useState<number | null>(null);
+  const [isScrubbing, setIsScrubbing] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Data syncrhonizer
   const dataSynchronizer = useRef<typeof DataSynchronizer>();
 
-  const handleSliderChange = (_: Event, newVal: number) => {
-    const value = Array.isArray(newVal) ? newVal[0] : newVal;
+  // Handle slider range change
+  const handleSliderChange = (
+    e: Event,
+    newVal: number[],
+    activeThumb: number
+  ) => {
     setIsScrubbing(true);
-    setCurrentTime(value);
+
+    // Handle min distance for min or max time thumbs
+    if (activeThumb === 0) {
+      setCurrentRange([
+        Math.min(newVal[0], currentRange[1] - minDistance),
+        currentRange[1],
+      ]);
+      setCurrentTime(Math.min(newVal[0], currentRange[1] - minDistance));
+    } else {
+      setCurrentRange([
+        currentRange[0],
+        Math.max(newVal[1], currentRange[0] + minDistance),
+      ]);
+      setCurrentTime(newVal[0]);
+    }
   };
 
+  // Handle committed slider range values
   const handleSliderCommitted = useCallback(
-    async (e: Event, value: number | number[]) => {
-      // handleCommitChange(event, value as number);
+    async (e: Event, value: number[]) => {
       console.log("New val:", value);
       setIsScrubbing(false);
 
-      // Set new start time for data synchronizer
-      dataSynchronizer.current.dataSynchronizerReplay.setStartTime(
-        value as number,
-        false
-      );
+      // If start time changed, reconnect data synchronizer
+      if (
+        dataSynchronizer.current.dataSynchronizerReplay.getStartTimeAsTimestamp() !=
+        value[0]
+      ) {
+        setIsLoading(true);
+        dataSynchronizer.current.disconnect();
+        // Set new start time for data synchronizer
+        dataSynchronizer.current.dataSynchronizerReplay.setStartTime(
+          value[0] as number,
+          false
+        );
+        dataSynchronizer.current.connect();
+        setIsLoading(false);
+      }
     },
     [dataSynchronizer]
   );
@@ -99,12 +141,17 @@ export default function ReplayCharts() {
   };
 
   // Set mix/max times
+  // Set default time slider range
   // Set current time to start time
   useEffect(() => {
     if (startTime && endTime) {
       setMinTime(new Date(startTime).getTime());
       setMaxTime(new Date(endTime).getTime());
       setCurrentTime(new Date(startTime).getTime());
+      setCurrentRange([
+        new Date(startTime).getTime(),
+        new Date(endTime).getTime(),
+      ]);
     }
   }, [startTime, endTime]);
 
@@ -225,8 +272,23 @@ export default function ReplayCharts() {
   }, [dataSynchronizer.current]);
 
   return (
-    <div>
-      <div style={{ display: "flex", height: "75%", margin: "2%" }}>
+    <Grid container>
+      <Box
+        sx={{
+          position: "absolute",
+          display: "flex",
+          zIndex: 9999,
+          width: "100%",
+          height: "100%",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+      <Box
+        style={{ display: "flex", height: "75%", width: "100%", margin: "2%" }}
+      >
         <div
           id="temperature-container"
           style={{ width: "50%", height: "90%", zIndex: 5 }}
@@ -235,29 +297,43 @@ export default function ReplayCharts() {
           id="humidity-container"
           style={{ width: "50%", height: "90%", zIndex: 5 }}
         ></div>
-      </div>
+      </Box>
       <Slider
         aria-labelledby="time-indicator"
-        value={currentTime}
+        value={currentRange}
         min={minTime}
         max={maxTime}
         onChange={handleSliderChange}
         onChangeCommitted={handleSliderCommitted}
         valueLabelDisplay="off"
+        disableSwap
+        sx={{
+          width: "90%",
+        }}
       ></Slider>
       <Stack
         direction={"row"}
         alignItems={"center"}
         justifyContent={"start"}
-        width={100}
+        gap={2}
       >
         <IconButton onClick={handlePlaying}>
           {isPlaying ? <PauseRoundedIcon /> : <PlayArrowRoundedIcon />}
         </IconButton>
-        <Typography variant={"body1"}>
-          {formatTime(currentTime)} / {formatTime(maxTime)}
-        </Typography>
+        <Stack direction={"column"} alignItems={"center"}>
+          <Typography variant={"body1"}>
+            {formatTime(currentTime)[0]}
+          </Typography>
+          <Typography variant={"body1"}>
+            {formatTime(currentTime)[1]}
+          </Typography>
+        </Stack>
+        <Typography variant={"body1"}>/</Typography>
+        <Stack direction={"column"} alignItems={"center"}>
+          <Typography variant={"body1"}>{formatTime(maxTime)[0]}</Typography>
+          <Typography variant={"body1"}>{formatTime(maxTime)[1]}</Typography>
+        </Stack>
       </Stack>
-    </div>
+    </Grid>
   );
 }

@@ -21,11 +21,13 @@ import CurveLayer from "osh-js/source/core/ui/layer/CurveLayer.js";
 import DataSynchronizer from "osh-js/source/core/timesync/DataSynchronizer";
 import ConSysApi from "osh-js/source/core/datasource/consysapi/ConSysApi.datasource";
 import { OSH_API_HOST } from "./config";
+import { TabProps } from "./App";
+import { Grid } from "@mui/material";
 
-export default function RealtimeCharts() {
+export default function RealtimeCharts(props: TabProps) {
   // Endpoint URL and sensor ID values
   const server = OSH_API_HOST;
-  const sensorId = "oa3ogh84spqo0";
+  const sensorId = props.sensorId;
 
   useEffect(() => {
     let dht22DataSource = new ConSysApi("DHT22", {
@@ -38,93 +40,87 @@ export default function RealtimeCharts() {
 
     // Define temperature curve layer
     let temperatureCurve = new CurveLayer({
-        dataSourceId: dht22DataSource.id,
-        getValues: (rec: any, timestamp: any) => {
-            console.log(rec);
-            console.log(timestamp)
-            return {
-                x: timestamp,
-                y: rec.temperature,
-            };
-        },
-        lineColor: "rgba(255,0,0,0.5)",
-        fill: true,
-        backgroundColor: "rgba(169,212,255,0.5)",
-        maxValues: 25,
-        name: "Temperature (Cel)",
+      dataSourceId: dht22DataSource.id,
+      getValues: (rec: any, timestamp: any) => {
+        console.log(rec);
+        console.log(timestamp);
+        return {
+          x: timestamp,
+          y: rec.temperature,
+        };
+      },
+      lineColor: "rgba(255,0,0,0.5)",
+      fill: true,
+      backgroundColor: "rgba(169,212,255,0.5)",
+      maxValues: 25,
+      name: "Temperature (Cel)",
     });
 
     // Define humidity curve layer
     let humidityCurve = new CurveLayer({
-        dataSourceId: dht22DataSource.id,
-        getValues: (rec: any, timestamp: any) => {
-            return {
-                x: timestamp,
-                y: rec.humidity,
-            };
-        },
-        lineColor: "rgba(0, 219, 44, 0.5)",
-        fill: true,
-        backgroundColor: "rgba(169,212,255,0.5)",
-        maxValues: 25,
-        name: "Humidity (%)",
+      dataSourceId: dht22DataSource.id,
+      getValues: (rec: any, timestamp: any) => {
+        return {
+          x: timestamp,
+          y: rec.humidity,
+        };
+      },
+      lineColor: "rgba(0, 219, 44, 0.5)",
+      fill: true,
+      backgroundColor: "rgba(169,212,255,0.5)",
+      maxValues: 25,
+      name: "Humidity (%)",
     });
 
     // Temperature chart setup
     let temperatureChartView = new ChartJsView({
-        container: "temperature-container",
-        layers: [temperatureCurve],
-        css: "chart-view",
-        options: {
-            scales: {
-                y: {
-                    title: {
-                        display: true,
-                        text: "Temperature (Cel)",
-                        padding: 20,
-                    },
-                },
+      container: "temperature-container",
+      layers: [temperatureCurve],
+      css: "chart-view",
+      options: {
+        scales: {
+          y: {
+            title: {
+              display: true,
+              text: "Temperature (Cel)",
+              padding: 20,
             },
+          },
         },
-        datasetOptions: {
-            tension: 0.2,
-        },
+      },
+      datasetOptions: {
+        tension: 0.2,
+      },
     });
 
     // Humidity chart setup
     let humidityChartView = new ChartJsView({
-        container: "humidity-container",
-        layers: [humidityCurve],
-        css: "chart-view",
-        options: {
-            scales: {
-                y: {
-                    title: {
-                        display: true,
-                        text: "Temperature (Cel)",
-                        padding: 20,
-                    },
-                },
+      container: "humidity-container",
+      layers: [humidityCurve],
+      css: "chart-view",
+      options: {
+        scales: {
+          y: {
+            title: {
+              display: true,
+              text: "Temperature (Cel)",
+              padding: 20,
             },
+          },
         },
-        datasetOptions: {
-            tension: 0.2,
-        },
+      },
+      datasetOptions: {
+        tension: 0.2,
+      },
     });
 
     dht22DataSource.connect();
   }, []);
 
   return (
-    <div style={{ display: "flex", height: "100%", margin: "2%" }}>
-      <div
-        id="temperature-container"
-        style={{ width: "50%", height: "90%" }}
-      ></div>
-      <div
-        id="humidity-container"
-        style={{ width: "50%", height: "90%" }}
-      ></div>
-    </div>
+    <Grid container sx={{ height: "100%", p: 4 }}>
+      <div id="temperature-container" style={{ width: "50%" }}></div>
+      <div id="humidity-container" style={{ width: "50%" }}></div>
+    </Grid>
   );
 }

@@ -19,16 +19,17 @@ import ChartJsView from "osh-js/source/core/ui/view/chart/ChartJsView.js";
 import CurveLayer from "osh-js/source/core/ui/layer/CurveLayer.js";
 import ConSysApi from "osh-js/source/core/datasource/consysapi/ConSysApi.datasource";
 import { OSH_API_HOST } from "./config";
+import { TabProps } from "./App";
+import { Grid } from "@mui/material";
 
-
-export default function BatchCharts() {
+export default function BatchCharts(props: TabProps) {
   // Endpoint URL and sensor ID values
   const server = OSH_API_HOST;
-  const sensorId = "oa3ogh84spqo0";
+  const sensorId = props.sensorId;
 
   // Time range values
-  const startTime = "2025-08-01T15:41:49.989Z";
-  const endTime = "2025-08-06T18:07:57Z";
+  const startTime = props.startTime;
+  const endTime = props.endTime;
 
   useEffect(() => {
     let dht22DataSource = new ConSysApi("DHT22", {
@@ -121,17 +122,16 @@ export default function BatchCharts() {
   }, []);
 
   return (
-    <div>
-      <div style={{ display: "flex", height: "75%", margin: "2%" }}>
-        <div
-          id="temperature-container"
-          style={{ width: "50%", height: "90%", zIndex: 5 }}
-        ></div>
-        <div
-          id="humidity-container"
-          style={{ width: "50%", height: "90%", zIndex: 5 }}
-        ></div>
-      </div>
-    </div>
+    <Grid container>
+      <p>Batch</p>
+      <div
+        id="temperature-container"
+        style={{ width: "50%", height: "90%", zIndex: 5 }}
+      ></div>
+      <div
+        id="humidity-container"
+        style={{ width: "50%", height: "90%", zIndex: 5 }}
+      ></div>
+    </Grid>
   );
 }

@@ -13,137 +13,69 @@
  *
  */
 
-import React, { useEffect } from "react";
+import React, { SyntheticEvent, useEffect, useState } from "react";
 import { Mode } from "osh-js/source/core/datasource/Mode";
 import ChartJsView from "osh-js/source/core/ui/view/chart/ChartJsView.js";
 import CurveLayer from "osh-js/source/core/ui/layer/CurveLayer.js";
 import DataSynchronizer from "osh-js/source/core/timesync/DataSynchronizer";
 import ConSysApi from "osh-js/source/core/datasource/consysapi/ConSysApi.datasource";
 import { OSH_API_HOST } from "./config";
+import { Box, Grid, Tab, Tabs } from "@mui/material";
+import RealtimeCharts from "./RealtimeCharts";
+import BatchCharts from "./BatchCharts";
+import ReplayCharts from "./ReplayCharts";
+
+export interface TabProps {
+  sensorId: string;
+  startTime?: string;
+  endTime?: string;
+}
 
 export default function App() {
   // Endpoint URL and sensor ID values
-  const server = OSH_API_HOST;
   const sensorId = "oa3ogh84spqo0";
 
-  useEffect(() => {
-    // let dht22DataSource = new SweApi("DHT22", {
-    //   id: sensorId,
-    //   protocol: "ws",
-    //   endpointUrl: server,
-    //   resource: `/datastreams/${sensorId}/observations`,
-    //   mode: Mode.REAL_TIME,
-    // });
+  // Time range values
+  const startTime = "2025-08-01T15:41:49.989Z";
+  const endTime = "2025-08-06T18:07:57Z";
 
-    let dht22DataSource = new ConSysApi("DHT22", {
-        id: sensorId,
-        protocol: "ws",
-        endpointUrl: server,
-        resource: `/datastreams/${sensorId}/observations`,
-        startTime: "2025-08-01T15:41:49.989Z",
-        endTime: "2025-08-04T19:45:15.919Z",
-        mode: Mode.REPLAY,
-    });
+  const [tab, setTab] = useState<number>(0);
 
-
-    // Define temperature curve layer
-    let temperatureCurve = new CurveLayer({
-        dataSourceId: dht22DataSource.id,
-        getValues: (rec: any, timestamp: any) => {
-            console.log(rec);
-            console.log(timestamp)
-            return {
-                x: timestamp,
-                y: rec.temperature,
-            };
-        },
-        lineColor: "rgba(255,0,0,0.5)",
-        fill: true,
-        backgroundColor: "rgba(169,212,255,0.5)",
-        maxValues: 25,
-        name: "Temperature (Cel)",
-    });
-
-    // Define humidity curve layer
-    let humidityCurve = new CurveLayer({
-        dataSourceId: dht22DataSource.id,
-        getValues: (rec: any, timestamp: any) => {
-            return {
-                x: timestamp,
-                y: rec.humidity,
-            };
-        },
-        lineColor: "rgba(0, 219, 44, 0.5)",
-        fill: true,
-        backgroundColor: "rgba(169,212,255,0.5)",
-        maxValues: 25,
-        name: "Humidity (%)",
-    });
-
-    // Temperature Chart setup
-    let temperatureChartView = new ChartJsView({
-        container: "temperature-container",
-        layers: [temperatureCurve],
-        css: "chart-view",
-        options: {
-            scales: {
-                y: {
-                    title: {
-                        display: true,
-                        text: "Temperature (Cel)",
-                        padding: 20,
-                    },
-                },
-            },
-        },
-        datasetOptions: {
-            tension: 0.2,
-        },
-    });
-
-    // Humidity Chart setup
-    let humidityChartView = new ChartJsView({
-        container: "humidity-container",
-        layers: [humidityCurve],
-        css: "chart-view",
-        options: {
-            scales: {
-                y: {
-                    title: {
-                        display: true,
-                        text: "Temperature (Cel)",
-                        padding: 20,
-                    },
-                },
-            },
-        },
-        datasetOptions: {
-            tension: 0.2,
-        },
-    });
-
-    // dht22DataSource.connect();
-    let dataSynchronizer = new DataSynchronizer({
-        replaySpeed: 10.0,
-        startTime: "2025-08-01T15:41:49.989Z",
-        endTime: "2025-08-04T19:45:15.919Z",
-        dataSources: [dht22DataSource],
-    });
-    dataSynchronizer.connect();
-
-    //dht22DataSource.connect();
-  }, []);
+  const handleChange = (e: SyntheticEvent, value: number) => {
+    setTab(value);
+  };
 
   return (
-    <div style={{ display: "flex", height: "100%", margin: "2%" }}>
-      <div
-        id="temperature-container"
-        style={{ width: "50%", height: "90%" }}
-      ></div>
-      <div
-        id="humidity-container"
-        style={{ width: "50%", height: "90%" }}
-      ></div>
-    </div>
+    <Grid container direction="column" height={"100%"}>
+      <Grid item sx={{ borderBottom: 1, borderColor: "divider" }}>
+        <Tabs
+          value={tab}
+          onChange={handleChange}
+          aria-label="chart option tabs"
+          centered
+        >
+          <Tab label="Realtime" />
+          <Tab label="Batch" />
+          <Tab label="Replay" />
+        </Tabs>
+      </Grid>
+      <Grid item sx={{ flex: 1 }}>
+        {tab == 0 ? (
+          <RealtimeCharts sensorId={sensorId} />
+        ) : tab == 1 ? (
+          <BatchCharts
+            sensorId={sensorId}
+            startTime={startTime}
+            endTime={endTime}
+          />
+        ) : (
+          <ReplayCharts
+            sensorId={sensorId}
+            startTime={startTime}
+            endTime={endTime}
+          />
+        )}
+      </Grid>
+    </Grid>
   );
 }

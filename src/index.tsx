@@ -16,11 +16,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
-import ReplayCharts from './ReplayCharts'
-import RealtimeCharts from './RealtimeCharts'
-import BatchCharts from './BatchCharts'
 
 // As of React 18
 const root = ReactDOM.createRoot(document.getElementById('root'))
 
-root.render(<ReplayCharts />)
+root.render(<App />)

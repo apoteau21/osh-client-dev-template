@@ -36,6 +36,7 @@ import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import PauseRoundedIcon from "@mui/icons-material/PauseRounded";
 import CircularProgress from "@mui/material/CircularProgress";
 import { grey } from "@mui/material/colors";
+import { TabProps } from "./App";
 
 /**
  * Format timestamp as LocaleTimeString
@@ -54,14 +55,14 @@ export const formatTime = (timestamp: number): string[] => {
   return [date, time];
 };
 
-export default function ReplayCharts() {
+export default function ReplayCharts(props: TabProps) {
   // Endpoint URL and sensor ID values
   const server = OSH_API_HOST;
-  const sensorId = "oa3ogh84spqo0";
+  const sensorId = props.sensorId;
 
   // Time range values
-  const startTime = "2025-08-01T15:41:49.989Z";
-  const endTime = "2025-08-06T18:07:57Z";
+  const startTime = props.startTime;
+  const endTime = props.endTime;
   const minDistance = 300000; // 5 minute minimum distance
 
   // Time controller states
@@ -273,6 +274,7 @@ export default function ReplayCharts() {
 
   return (
     <Grid container>
+      <p>Replay</p>
       <Box
         sx={{
           position: "absolute",

@@ -78,7 +78,7 @@ export default function BatchCharts(props: TabProps) {
 
     // Temperature chart setup
     let temperatureChartView = new ChartJsView({
-      container: "temperature-container",
+      container: "b-temperature-container",
       layers: [temperatureCurve],
       css: "chart-view",
       options: {
@@ -99,7 +99,7 @@ export default function BatchCharts(props: TabProps) {
 
     // Humidity chart setup
     let humidityChartView = new ChartJsView({
-      container: "humidity-container",
+      container: "b-humidity-container",
       layers: [humidityCurve],
       css: "chart-view",
       options: {
@@ -122,16 +122,9 @@ export default function BatchCharts(props: TabProps) {
   }, []);
 
   return (
-    <Grid container>
-      <p>Batch</p>
-      <div
-        id="temperature-container"
-        style={{ width: "50%", height: "90%", zIndex: 5 }}
-      ></div>
-      <div
-        id="humidity-container"
-        style={{ width: "50%", height: "90%", zIndex: 5 }}
-      ></div>
+    <Grid container sx={{ height: "100%", p: 4 }}>
+      <div id="b-temperature-container" style={{ width: "50%" }}></div>
+      <div id="b-humidity-container" style={{ width: "50%" }}></div>
     </Grid>
   );
 }

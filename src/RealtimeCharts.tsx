@@ -15,10 +15,8 @@
 
 import React, { useEffect } from "react";
 import { Mode } from "osh-js/source/core/datasource/Mode";
-import SweApi from "osh-js/source/core/datasource/sweapi/SweApi.datasource";
 import ChartJsView from "osh-js/source/core/ui/view/chart/ChartJsView.js";
 import CurveLayer from "osh-js/source/core/ui/layer/CurveLayer.js";
-import DataSynchronizer from "osh-js/source/core/timesync/DataSynchronizer";
 import ConSysApi from "osh-js/source/core/datasource/consysapi/ConSysApi.datasource";
 import { OSH_API_HOST } from "./config";
 import { TabProps } from "./App";
@@ -74,7 +72,7 @@ export default function RealtimeCharts(props: TabProps) {
 
     // Temperature chart setup
     let temperatureChartView = new ChartJsView({
-      container: "temperature-container",
+      container: "rt-temperature-container",
       layers: [temperatureCurve],
       css: "chart-view",
       options: {
@@ -95,7 +93,7 @@ export default function RealtimeCharts(props: TabProps) {
 
     // Humidity chart setup
     let humidityChartView = new ChartJsView({
-      container: "humidity-container",
+      container: "rt-humidity-container",
       layers: [humidityCurve],
       css: "chart-view",
       options: {
@@ -119,8 +117,8 @@ export default function RealtimeCharts(props: TabProps) {
 
   return (
     <Grid container sx={{ height: "100%", p: 4 }}>
-      <div id="temperature-container" style={{ width: "50%" }}></div>
-      <div id="humidity-container" style={{ width: "50%" }}></div>
+      <div id="rt-temperature-container" style={{ width: "50%" }}></div>
+      <div id="rt-humidity-container" style={{ width: "50%" }}></div>
     </Grid>
   );
 }

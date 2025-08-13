@@ -23,19 +23,11 @@ import { EventType } from "osh-js/source/core/event/EventType";
 import { OSH_API_HOST } from "./config";
 
 // Slider imports
-import {
-  Box,
-  Grid,
-  IconButton,
-  Portal,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, Grid, IconButton, Stack, Typography } from "@mui/material";
 import Slider from "@mui/material/Slider";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import PauseRoundedIcon from "@mui/icons-material/PauseRounded";
 import CircularProgress from "@mui/material/CircularProgress";
-import { grey } from "@mui/material/colors";
 import { TabProps } from "./App";
 
 /**
@@ -105,24 +97,17 @@ export default function ReplayCharts(props: TabProps) {
   // Handle committed slider range values
   const handleSliderCommitted = useCallback(
     async (e: Event, value: number[]) => {
-      console.log("New val:", value);
       setIsScrubbing(false);
+      setIsLoading(true);
 
-      // If start time changed, reconnect data synchronizer
-      if (
-        dataSynchronizer.current.dataSynchronizerReplay.getStartTimeAsTimestamp() !=
-        value[0]
-      ) {
-        setIsLoading(true);
-        dataSynchronizer.current.disconnect();
-        // Set new start time for data synchronizer
-        dataSynchronizer.current.dataSynchronizerReplay.setStartTime(
-          value[0] as number,
-          false
-        );
-        dataSynchronizer.current.connect();
-        setIsLoading(false);
-      }
+      dataSynchronizer.current.disconnect();
+      // Set new start time for data synchronizer
+      dataSynchronizer.current.dataSynchronizerReplay.setStartTime(
+        value[0] as number,
+        false
+      );
+      dataSynchronizer.current.connect();
+      setIsLoading(false);
     },
     [dataSynchronizer]
   );
@@ -137,7 +122,6 @@ export default function ReplayCharts(props: TabProps) {
         dataSynchronizer.current.connect();
       }
     }
-
     setIsPlaying(!isPlaying);
   };
 
@@ -207,7 +191,7 @@ export default function ReplayCharts(props: TabProps) {
 
     // Temperature chart setup
     let temperatureChartView = new ChartJsView({
-      container: "temperature-container",
+      container: "rp-temperature-container",
       layers: [temperatureCurve],
       css: "chart-view",
       options: {
@@ -228,7 +212,7 @@ export default function ReplayCharts(props: TabProps) {
 
     // Humidity chart setup
     let humidityChartView = new ChartJsView({
-      container: "humidity-container",
+      container: "rp-humidity-container",
       layers: [humidityCurve],
       css: "chart-view",
       options: {
@@ -273,12 +257,17 @@ export default function ReplayCharts(props: TabProps) {
   }, [dataSynchronizer.current]);
 
   return (
-    <Grid container>
-      <p>Replay</p>
+    <Grid
+      container
+      sx={{ height: "100%", p: 4 }}
+      justifyContent={"start"}
+      alignItems={"flex-start"}
+      spacing={2}
+    >
       <Box
         sx={{
           position: "absolute",
-          display: "flex",
+          display: isLoading ? "flex" : "none",
           zIndex: 9999,
           width: "100%",
           height: "100%",
@@ -288,52 +277,52 @@ export default function ReplayCharts(props: TabProps) {
       >
         <CircularProgress />
       </Box>
-      <Box
-        style={{ display: "flex", height: "75%", width: "100%", margin: "2%" }}
+      <Grid
+        container
+        sx={{ height: "60%", width: "100%" }}
+        spacing={0}
+        justifyContent={"center"}
       >
-        <div
-          id="temperature-container"
-          style={{ width: "50%", height: "90%", zIndex: 5 }}
-        ></div>
-        <div
-          id="humidity-container"
-          style={{ width: "50%", height: "90%", zIndex: 5 }}
-        ></div>
-      </Box>
-      <Slider
-        aria-labelledby="time-indicator"
-        value={currentRange}
-        min={minTime}
-        max={maxTime}
-        onChange={handleSliderChange}
-        onChangeCommitted={handleSliderCommitted}
-        valueLabelDisplay="off"
-        disableSwap
-        sx={{
-          width: "90%",
-        }}
-      ></Slider>
-      <Stack
-        direction={"row"}
-        alignItems={"center"}
-        justifyContent={"start"}
-        gap={2}
-      >
-        <IconButton onClick={handlePlaying}>
-          {isPlaying ? <PauseRoundedIcon /> : <PlayArrowRoundedIcon />}
-        </IconButton>
-        <Stack direction={"column"} alignItems={"center"}>
-          <Typography variant={"body1"}>
-            {formatTime(currentTime)[0]}
-          </Typography>
-          <Typography variant={"body1"}>
-            {formatTime(currentTime)[1]}
-          </Typography>
-        </Stack>
-        <Typography variant={"body1"}>/</Typography>
-        <Stack direction={"column"} alignItems={"center"}>
-          <Typography variant={"body1"}>{formatTime(maxTime)[0]}</Typography>
-          <Typography variant={"body1"}>{formatTime(maxTime)[1]}</Typography>
+        <div id="rp-temperature-container" style={{ width: "50%" }}></div>
+        <div id="rp-humidity-container" style={{ width: "50%" }}></div>
+      </Grid>
+      <Stack direction={"column"} width={"100%"}>
+        <Slider
+          aria-labelledby="time-indicator"
+          value={currentRange}
+          min={minTime}
+          max={maxTime}
+          onChange={handleSliderChange}
+          onChangeCommitted={handleSliderCommitted}
+          valueLabelDisplay="off"
+          disableSwap
+          sx={{
+            width: "100%",
+          }}
+        ></Slider>
+        <Stack
+          direction={"row"}
+          alignItems={"start"}
+          justifyContent={"start"}
+          gap={2}
+          width={"100%"}
+        >
+          <IconButton onClick={handlePlaying}>
+            {isPlaying ? <PauseRoundedIcon /> : <PlayArrowRoundedIcon />}
+          </IconButton>
+          <Stack direction={"column"} alignItems={"center"}>
+            <Typography variant={"body1"}>
+              {formatTime(currentTime)[0]}
+            </Typography>
+            <Typography variant={"body1"}>
+              {formatTime(currentTime)[1]}
+            </Typography>
+          </Stack>
+          <Typography variant={"body1"}>/</Typography>
+          <Stack direction={"column"} alignItems={"center"}>
+            <Typography variant={"body1"}>{formatTime(maxTime)[0]}</Typography>
+            <Typography variant={"body1"}>{formatTime(maxTime)[1]}</Typography>
+          </Stack>
         </Stack>
       </Stack>
     </Grid>

@@ -13,14 +13,8 @@
  *
  */
 
-import React, { SyntheticEvent, useEffect, useState } from "react";
-import { Mode } from "osh-js/source/core/datasource/Mode";
-import ChartJsView from "osh-js/source/core/ui/view/chart/ChartJsView.js";
-import CurveLayer from "osh-js/source/core/ui/layer/CurveLayer.js";
-import DataSynchronizer from "osh-js/source/core/timesync/DataSynchronizer";
-import ConSysApi from "osh-js/source/core/datasource/consysapi/ConSysApi.datasource";
-import { OSH_API_HOST } from "./config";
-import { Box, Grid, Tab, Tabs } from "@mui/material";
+import React, { SyntheticEvent, useState } from "react";
+import { Grid, Tab, Tabs } from "@mui/material";
 import RealtimeCharts from "./RealtimeCharts";
 import BatchCharts from "./BatchCharts";
 import ReplayCharts from "./ReplayCharts";
@@ -37,7 +31,7 @@ export default function App() {
 
   // Time range values
   const startTime = "2025-08-01T15:41:49.989Z";
-  const endTime = "2025-08-06T18:07:57Z";
+  const endTime = "2025-08-01T18:04:08.839Z";
 
   const [tab, setTab] = useState<number>(0);
 

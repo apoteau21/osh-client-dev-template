@@ -77,6 +77,7 @@ export default function ReplayCharts(props: TabProps) {
     activeThumb: number
   ) => {
     setIsScrubbing(true);
+    setIsPlaying(false);
 
     // Handle min distance for min or max time thumbs
     if (activeThumb === 0) {
@@ -98,6 +99,7 @@ export default function ReplayCharts(props: TabProps) {
   const handleSliderCommitted = useCallback(
     async (e: Event, value: number[]) => {
       setIsScrubbing(false);
+      setIsPlaying(true);
       setIsLoading(true);
 
       dataSynchronizer.current.disconnect();
@@ -241,6 +243,17 @@ export default function ReplayCharts(props: TabProps) {
 
     // Connect data synchronizer
     dataSynchronizer.current.connect();
+
+    // Cleanup on unmount
+    return () => {
+      if (dataSynchronizer.current) {
+        dataSynchronizer.current.disconnect();
+        dataSynchronizer.current = undefined;
+      }
+      dht22DataSource.disconnect();
+      temperatureChartView.destroy(); // optional but good to free memory
+      humidityChartView.destroy();
+    };
   }, [dataSynchronizer]);
 
   useEffect(() => {
@@ -294,7 +307,10 @@ export default function ReplayCharts(props: TabProps) {
           max={maxTime}
           onChange={handleSliderChange}
           onChangeCommitted={handleSliderCommitted}
-          valueLabelDisplay="off"
+          valueLabelDisplay="auto"
+          valueLabelFormat={(val) => {
+            return formatTime(val)[0] + " " + formatTime(val)[1];
+          }}
           disableSwap
           sx={{
             width: "100%",

@@ -15,6 +15,7 @@
 
 import React, { SyntheticEvent, useState } from "react";
 import { Grid, Tab, Tabs } from "@mui/material";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import RealtimeCharts from "./RealtimeCharts";
 import BatchCharts from "./BatchCharts";
 import ReplayCharts from "./ReplayCharts";
@@ -40,36 +41,46 @@ export default function App() {
   };
 
   return (
-    <Grid container direction="column" height={"100%"}>
-      <Grid item sx={{ borderBottom: 1, borderColor: "divider" }}>
-        <Tabs
-          value={tab}
-          onChange={handleChange}
-          aria-label="chart option tabs"
-          centered
-        >
-          <Tab label="Realtime" />
-          <Tab label="Batch" />
-          <Tab label="Replay" />
-        </Tabs>
+    <Router>
+      <Grid container direction="column" height={"100%"}>
+        <Grid item sx={{ borderBottom: 1, borderColor: "divider" }}>
+          <Tabs
+            value={tab}
+            onChange={handleChange}
+            aria-label="chart option tabs"
+            centered
+          >
+            <Tab label="Realtime" value={0} component={Link} to="/" />
+            <Tab label="Batch" value={1} component={Link} to="/batch" />
+            <Tab label="Replay" value={2} component={Link} to="/replay" />
+          </Tabs>
+        </Grid>
+        <Grid item sx={{ flex: 1 }}>
+          <Routes>
+            <Route path="/" element={<RealtimeCharts sensorId={sensorId} />} />
+            <Route
+              path="/replay"
+              element={
+                <ReplayCharts
+                  sensorId={sensorId}
+                  startTime={startTime}
+                  endTime={endTime}
+                />
+              }
+            />
+            <Route
+              path="/batch"
+              element={
+                <BatchCharts
+                  sensorId={sensorId}
+                  startTime={startTime}
+                  endTime={endTime}
+                />
+              }
+            />
+          </Routes>
+        </Grid>
       </Grid>
-      <Grid item sx={{ flex: 1 }}>
-        {tab == 0 ? (
-          <RealtimeCharts sensorId={sensorId} />
-        ) : tab == 1 ? (
-          <BatchCharts
-            sensorId={sensorId}
-            startTime={startTime}
-            endTime={endTime}
-          />
-        ) : (
-          <ReplayCharts
-            sensorId={sensorId}
-            startTime={startTime}
-            endTime={endTime}
-          />
-        )}
-      </Grid>
-    </Grid>
+    </Router>
   );
 }

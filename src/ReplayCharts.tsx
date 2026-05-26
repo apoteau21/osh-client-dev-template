@@ -20,7 +20,7 @@ import CurveLayer from "osh-js/source/core/ui/layer/CurveLayer.js";
 import DataSynchronizer from "osh-js/source/core/timesync/DataSynchronizer";
 import ConSysApi from "osh-js/source/core/datasource/consysapi/ConSysApi.datasource";
 import { EventType } from "osh-js/source/core/event/EventType";
-import { OSH_API_HOST } from "./config";
+//import { OSH_API_HOST } from "./config";
 
 // Slider imports
 import { Box, Grid, IconButton, Stack, Typography } from "@mui/material";
@@ -49,7 +49,7 @@ export const formatTime = (timestamp: number): string[] => {
 
 export default function ReplayCharts(props: TabProps) {
   // Endpoint URL and sensor ID values
-  const server = OSH_API_HOST;
+  //const server = OSH_API_HOST;
   const sensorId = props.sensorId;
 
   // Time range values
@@ -147,102 +147,125 @@ export default function ReplayCharts(props: TabProps) {
   }, [syncTime, isScrubbing]);
 
   useEffect(() => {
-    let dht22DataSource = new ConSysApi("DHT22", {
-      id: sensorId,
-      protocol: "ws",
-      endpointUrl: server,
-      resource: `/datastreams/${sensorId}/observations`,
-      startTime: startTime,
-      endTime: endTime,
-      mode: Mode.REPLAY,
-    });
+      let audioDataSource = new ConSysApi("audio",{
+              id: "0258jl5eicug",
+              protocol: "ws",
+              endpointUrl: "/localhost:8181/sensorhub/api",
+              resource: '/datastreams/0258jl5eicug/observations',
+              mode: Mode.REAL_TIME,
+          });
+
+           let audioView = new AudioView({
+               name: "Audio",
+               css: 'audio-css',
+               container: 'audio-chart-container',
+               dataSource: audioDataSource,
+               gain: 5,
+               playSound: false
+              });
+
+              const audioSpectrogramVisualizer = new AudioSpectrogramVisualizer({
+                  fftSize: 2048,
+                  container: "audio-spectrogram",
+                  sampleField: 'samples',
+                  colorScale: 'jet',
+              });
+//     let dht22DataSource = new ConSysApi("DHT22", {
+//       id: sensorId,
+//       protocol: "ws",
+//       endpointUrl: server,
+//       resource: `/datastreams/${sensorId}/observations`,
+//       startTime: startTime,
+//       endTime: endTime,
+//       mode: Mode.REPLAY,
+//     });
 
     // Define temperature curve layer
-    let temperatureCurve = new CurveLayer({
-      dataSourceId: dht22DataSource.id,
-      getValues: (rec: any, timestamp: any) => {
-        console.log(rec);
-        console.log(timestamp);
-        return {
-          x: timestamp,
-          y: rec.temperature,
-        };
-      },
-      lineColor: "rgba(255,0,0,0.5)",
-      fill: true,
-      backgroundColor: "rgba(169,212,255,0.5)",
-      maxValues: 25,
-      name: "Temperature (Cel)",
-    });
+//     let temperatureCurve = new CurveLayer({
+//       dataSourceId: dht22DataSource.id,
+//       getValues: (rec: any, timestamp: any) => {
+//         console.log(rec);
+//         console.log(timestamp);
+//         return {
+//           x: timestamp,
+//           y: rec.temperature,
+//         };
+//       },
+//       lineColor: "rgba(255,0,0,0.5)",
+//       fill: true,
+//       backgroundColor: "rgba(169,212,255,0.5)",
+//       maxValues: 25,
+//       name: "Temperature (Cel)",
+//     });
 
     // Define humidity curve layer
-    let humidityCurve = new CurveLayer({
-      dataSourceId: dht22DataSource.id,
-      getValues: (rec: any, timestamp: any) => {
-        return {
-          x: timestamp,
-          y: rec.humidity,
-        };
-      },
-      lineColor: "rgba(0, 219, 44, 0.5)",
-      fill: true,
-      backgroundColor: "rgba(169,212,255,0.5)",
-      maxValues: 25,
-      name: "Humidity (%)",
-    });
+//     let humidityCurve = new CurveLayer({
+//       dataSourceId: dht22DataSource.id,
+//       getValues: (rec: any, timestamp: any) => {
+//         return {
+//           x: timestamp,
+//           y: rec.humidity,
+//         };
+//       },
+//       lineColor: "rgba(0, 219, 44, 0.5)",
+//       fill: true,
+//       backgroundColor: "rgba(169,212,255,0.5)",
+//       maxValues: 25,
+//       name: "Humidity (%)",
+//     });
 
     // Temperature chart setup
-    let temperatureChartView = new ChartJsView({
-      container: "rp-temperature-container",
-      layers: [temperatureCurve],
-      css: "chart-view",
-      options: {
-        scales: {
-          y: {
-            title: {
-              display: true,
-              text: "Temperature (Cel)",
-              padding: 20,
-            },
-          },
-        },
-      },
-      datasetOptions: {
-        tension: 0.2,
-      },
-    });
+//     let temperatureChartView = new ChartJsView({
+//       container: "rp-temperature-container",
+//       layers: [temperatureCurve],
+//       css: "chart-view",
+//       options: {
+//         scales: {
+//           y: {
+//             title: {
+//               display: true,
+//               text: "Temperature (Cel)",
+//               padding: 20,
+//             },
+//           },
+//         },
+//       },
+//       datasetOptions: {
+//         tension: 0.2,
+//       },
+//     });
 
     // Humidity chart setup
-    let humidityChartView = new ChartJsView({
-      container: "rp-humidity-container",
-      layers: [humidityCurve],
-      css: "chart-view",
-      options: {
-        scales: {
-          y: {
-            title: {
-              display: true,
-              text: "Temperature (Cel)",
-              padding: 20,
-            },
-          },
-        },
-      },
-      datasetOptions: {
-        tension: 0.2,
-      },
-    });
+//     let humidityChartView = new ChartJsView({
+//       container: "rp-humidity-container",
+//       layers: [humidityCurve],
+//       css: "chart-view",
+//       options: {
+//         scales: {
+//           y: {
+//             title: {
+//               display: true,
+//               text: "Temperature (Cel)",
+//               padding: 20,
+//             },
+//           },
+//         },
+//       },
+//       datasetOptions: {
+//         tension: 0.2,
+//       },
+//     });
 
     // Init data synchronizer
     dataSynchronizer.current = new DataSynchronizer({
       replaySpeed: 10.0,
       startTime: startTime,
       endTime: endTime,
-      dataSources: [dht22DataSource],
+      dataSources: [audioDataSource],
     });
 
     // Connect data synchronizer
-    dataSynchronizer.current.connect();
+    //dataSynchronizer.current.connect();
 
     // Cleanup on unmount
     return () => {
@@ -250,9 +273,9 @@ export default function ReplayCharts(props: TabProps) {
         dataSynchronizer.current.disconnect();
         dataSynchronizer.current = undefined;
       }
-      dht22DataSource.disconnect();
-      temperatureChartView.destroy(); // optional but good to free memory
-      humidityChartView.destroy();
+      audioDataSource.disconnect();
+      audioView.destroy();
+      audioSpectrogramVisualizer.destroy();
     };
   }, [dataSynchronizer]);
 
@@ -296,8 +319,8 @@ export default function ReplayCharts(props: TabProps) {
         spacing={0}
         justifyContent={"center"}
       >
-        <div id="rp-temperature-container" style={{ width: "50%" }}></div>
-        <div id="rp-humidity-container" style={{ width: "50%" }}></div>
+        <div id="audio-chart-container" style={{ width: "50%" }}></div>
+        <div id="audio-spectrogram" style={{ width: "50%" }}></div>
       </Grid>
       <Stack direction={"column"} width={"100%"}>
         <Slider

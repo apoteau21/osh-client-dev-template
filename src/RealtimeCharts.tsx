@@ -18,107 +18,49 @@ import { Mode } from "osh-js/source/core/datasource/Mode";
 import ChartJsView from "osh-js/source/core/ui/view/chart/ChartJsView.js";
 import CurveLayer from "osh-js/source/core/ui/layer/CurveLayer.js";
 import ConSysApi from "osh-js/source/core/datasource/consysapi/ConSysApi.datasource";
-import { OSH_API_HOST } from "./config";
+// import { OSH_API_HOST } from "./config";
 import { TabProps } from "./App";
 import { Grid } from "@mui/material";
+import AudioView from "osh-js/source/core/ui/view/audio/AudioView";
+import AudioSpectrogramVisualizer from "osh-js/source/core/ui/view/audio/visualizer/spectrogram/AudioSpectrogramVisualizer";
+
 
 export default function RealtimeCharts(props: TabProps) {
   // Endpoint URL and sensor ID values
-  const server = OSH_API_HOST;
+//   const server = OSH_API_HOST;
   const sensorId = props.sensorId;
 
   useEffect(() => {
-    let dht22DataSource = new ConSysApi("DHT22", {
-      id: sensorId,
-      protocol: "ws",
-      endpointUrl: server,
-      resource: `/datastreams/${sensorId}/observations`,
-      mode: Mode.REAL_TIME,
+    let audioDataSource = new ConSysApi("audio",{
+        id: "0258jl5eicug",
+        protocol: "ws",
+        endpointUrl: "/localhost:8181/sensorhub/api",
+        resource: '/datastreams/0258jl5eicug/observations',
+        mode: Mode.REAL_TIME,
     });
 
-    // Define temperature curve layer
-    let temperatureCurve = new CurveLayer({
-      dataSourceId: dht22DataSource.id,
-      getValues: (rec: any, timestamp: any) => {
-        console.log(rec);
-        console.log(timestamp);
-        return {
-          x: timestamp,
-          y: rec.temperature,
-        };
-      },
-      lineColor: "rgba(255,0,0,0.5)",
-      fill: true,
-      backgroundColor: "rgba(169,212,255,0.5)",
-      maxValues: 25,
-      name: "Temperature (Cel)",
-    });
+     let audioView = new AudioView({
+         name: "Audio",
+         css: 'audio-css',
+         container: 'audio-chart-container',
+         dataSource: audioDataSource,
+         gain: 5,
+         playSound: false
+        });
 
-    // Define humidity curve layer
-    let humidityCurve = new CurveLayer({
-      dataSourceId: dht22DataSource.id,
-      getValues: (rec: any, timestamp: any) => {
-        return {
-          x: timestamp,
-          y: rec.humidity,
-        };
-      },
-      lineColor: "rgba(0, 219, 44, 0.5)",
-      fill: true,
-      backgroundColor: "rgba(169,212,255,0.5)",
-      maxValues: 25,
-      name: "Humidity (%)",
-    });
+        const audioSpectrogramVisualizer = new AudioSpectrogramVisualizer({
+            fftSize: 2048,
+            container: "audio-spectrogram",
+            sampleField: 'samples',
+            colorScale: 'jet',
+        });
+        audioDataSource.connect();
 
-    // Temperature chart setup
-    let temperatureChartView = new ChartJsView({
-      container: "rt-temperature-container",
-      layers: [temperatureCurve],
-      css: "chart-view",
-      options: {
-        scales: {
-          y: {
-            title: {
-              display: true,
-              text: "Temperature (Cel)",
-              padding: 20,
-            },
-          },
-        },
-      },
-      datasetOptions: {
-        tension: 0.2,
-      },
-    });
-
-    // Humidity chart setup
-    let humidityChartView = new ChartJsView({
-      container: "rt-humidity-container",
-      layers: [humidityCurve],
-      css: "chart-view",
-      options: {
-        scales: {
-          y: {
-            title: {
-              display: true,
-              text: "Temperature (Cel)",
-              padding: 20,
-            },
-          },
-        },
-      },
-      datasetOptions: {
-        tension: 0.2,
-      },
-    });
-
-    dht22DataSource.connect();
   }, []);
 
   return (
     <Grid container sx={{ height: "100%", p: 4 }}>
-      <div id="rt-temperature-container" style={{ width: "50%" }}></div>
-      <div id="rt-humidity-container" style={{ width: "50%" }}></div>
+      <div id="audio-chart-container" style={{ width: "50%" }}></div>
     </Grid>
   );
 }

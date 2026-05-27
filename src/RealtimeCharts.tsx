@@ -32,10 +32,10 @@ export default function RealtimeCharts(props: TabProps) {
 
   useEffect(() => {
     let audioDataSource = new ConSysApi("audio",{
-        id: "0258jl5eicug",
+        id: "03mtl1uill10",
         protocol: "ws",
         endpointUrl: "/localhost:8181/sensorhub/api",
-        resource: '/datastreams/0258jl5eicug/observations',
+        resource: '/datastreams/03mtl1uill10/observations',
         mode: Mode.REAL_TIME,
     });
 
@@ -60,7 +60,9 @@ export default function RealtimeCharts(props: TabProps) {
 
   return (
     <Grid container sx={{ height: "100%", p: 4 }}>
-      <div id="audio-chart-container" style={{ width: "50%" }}></div>
+      <div id="audio-chart-container" style={{ width: "50%" }}>
+      <div id="audio-spectrogram"> </div>
+      </div>
     </Grid>
   );
 }

@@ -20,6 +20,8 @@ import CurveLayer from "osh-js/source/core/ui/layer/CurveLayer.js";
 import DataSynchronizer from "osh-js/source/core/timesync/DataSynchronizer";
 import ConSysApi from "osh-js/source/core/datasource/consysapi/ConSysApi.datasource";
 import { EventType } from "osh-js/source/core/event/EventType";
+import AudioView from "osh-js/source/core/ui/view/audio/AudioView";
+import AudioSpectrogramVisualizer from "osh-js/source/core/ui/view/audio/visualizer/spectrogram/AudioSpectrogramVisualizer";
 //import { OSH_API_HOST } from "./config";
 
 // Slider imports
@@ -148,10 +150,10 @@ export default function ReplayCharts(props: TabProps) {
 
   useEffect(() => {
       let audioDataSource = new ConSysApi("audio",{
-              id: "0258jl5eicug",
+              id: "03mtl1uill10",
               protocol: "ws",
               endpointUrl: "/localhost:8181/sensorhub/api",
-              resource: '/datastreams/0258jl5eicug/observations',
+              resource: '/datastreams/03mtl1uill10/observations',
               mode: Mode.REAL_TIME,
           });
 
@@ -292,78 +294,86 @@ export default function ReplayCharts(props: TabProps) {
     }
   }, [dataSynchronizer.current]);
 
-  return (
-    <Grid
-      container
-      sx={{ height: "100%", p: 4 }}
-      justifyContent={"start"}
-      alignItems={"flex-start"}
-      spacing={2}
-    >
-      <Box
-        sx={{
-          position: "absolute",
-          display: isLoading ? "flex" : "none",
-          zIndex: 9999,
-          width: "100%",
-          height: "100%",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <CircularProgress />
-      </Box>
-      <Grid
-        container
-        sx={{ height: "60%", width: "100%" }}
-        spacing={0}
-        justifyContent={"center"}
-      >
-        <div id="audio-chart-container" style={{ width: "50%" }}></div>
-        <div id="audio-spectrogram" style={{ width: "50%" }}></div>
-      </Grid>
-      <Stack direction={"column"} width={"100%"}>
-        <Slider
-          aria-labelledby="time-indicator"
-          value={currentRange}
-          min={minTime}
-          max={maxTime}
-          onChange={handleSliderChange}
-          onChangeCommitted={handleSliderCommitted}
-          valueLabelDisplay="auto"
-          valueLabelFormat={(val) => {
-            return formatTime(val)[0] + " " + formatTime(val)[1];
-          }}
-          disableSwap
-          sx={{
-            width: "100%",
-          }}
-        ></Slider>
-        <Stack
-          direction={"row"}
-          alignItems={"start"}
-          justifyContent={"start"}
-          gap={2}
-          width={"100%"}
-        >
-          <IconButton onClick={handlePlaying}>
-            {isPlaying ? <PauseRoundedIcon /> : <PlayArrowRoundedIcon />}
-          </IconButton>
-          <Stack direction={"column"} alignItems={"center"}>
-            <Typography variant={"body1"}>
-              {formatTime(currentTime)[0]}
-            </Typography>
-            <Typography variant={"body1"}>
-              {formatTime(currentTime)[1]}
-            </Typography>
-          </Stack>
-          <Typography variant={"body1"}>/</Typography>
-          <Stack direction={"column"} alignItems={"center"}>
-            <Typography variant={"body1"}>{formatTime(maxTime)[0]}</Typography>
-            <Typography variant={"body1"}>{formatTime(maxTime)[1]}</Typography>
-          </Stack>
-        </Stack>
-      </Stack>
-    </Grid>
-  );
+//   return (
+//     <Grid
+//       container
+//       sx={{ height: "100%", p: 4 }}
+//       justifyContent={"start"}
+//       alignItems={"flex-start"}
+//       spacing={2}
+//     >
+//       <Box
+//         sx={{
+//           position: "absolute",
+//           display: isLoading ? "flex" : "none",
+//           zIndex: 9999,
+//           width: "100%",
+//           height: "100%",
+//           justifyContent: "center",
+//           alignItems: "center",
+//         }}
+//       >
+//         <CircularProgress />
+//       </Box>
+//       <Grid
+//         container
+//         sx={{ height: "60%", width: "100%" }}
+//         spacing={0}
+//         justifyContent={"center"}
+//       >
+//         <div id="audio-chart-container" style={{ width: "50%" }}></div>
+//         <div id="audio-spectrogram" style={{ width: "50%" }}></div>
+//       </Grid>
+//       <Stack direction={"column"} width={"100%"}>
+//         <Slider
+//           aria-labelledby="time-indicator"
+//           value={currentRange}
+//           min={minTime}
+//           max={maxTime}
+//           onChange={handleSliderChange}
+//           onChangeCommitted={handleSliderCommitted}
+//           valueLabelDisplay="auto"
+//           valueLabelFormat={(val) => {
+//             return formatTime(val)[0] + " " + formatTime(val)[1];
+//           }}
+//           disableSwap
+//           sx={{
+//             width: "100%",
+//           }}
+//         ></Slider>
+//         <Stack
+//           direction={"row"}
+//           alignItems={"start"}
+//           justifyContent={"start"}
+//           gap={2}
+//           width={"100%"}
+//         >
+//           <IconButton onClick={handlePlaying}>
+//             {isPlaying ? <PauseRoundedIcon /> : <PlayArrowRoundedIcon />}
+//           </IconButton>
+//           <Stack direction={"column"} alignItems={"center"}>
+//             <Typography variant={"body1"}>
+//               {formatTime(currentTime)[0]}
+//             </Typography>
+//             <Typography variant={"body1"}>
+//               {formatTime(currentTime)[1]}
+//             </Typography>
+//           </Stack>
+//           <Typography variant={"body1"}>/</Typography>
+//           <Stack direction={"column"} alignItems={"center"}>
+//             <Typography variant={"body1"}>{formatTime(maxTime)[0]}</Typography>
+//             <Typography variant={"body1"}>{formatTime(maxTime)[1]}</Typography>
+//           </Stack>
+//         </Stack>
+//       </Stack>
+//     </Grid>
+//   );
+return (<Grid
+              container
+              sx={{ height: "100%", p: 4 }}
+              justifyContent={"start"}
+              alignItems={"flex-start"}
+              spacing={2}
+            ><div id="audio-chart-container" style={{ width: "50%" }}></div>
+                     <div id="audio-spectrogram" style={{ width: "50%" }}></div></Grid>);
 }

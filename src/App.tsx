@@ -28,7 +28,7 @@ export interface TabProps {
 
 export default function App() {
   // Endpoint URL and sensor ID values
-  const sensorId = "oa3ogh84spqo0";
+  const sensorId = "03mtl1uill10";
 
   // Time range values
   const startTime = "2025-08-01T15:41:49.989Z";

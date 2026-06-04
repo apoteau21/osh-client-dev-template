@@ -24,6 +24,11 @@ import { Grid } from "@mui/material";
 import AudioView from "osh-js/source/core/ui/view/audio/AudioView";
 import AudioSpectrogramVisualizer from "osh-js/source/core/ui/view/audio/visualizer/spectrogram/AudioSpectrogramVisualizer";
 
+import { Box, IconButton, Stack, Typography } from "@mui/material";
+import Slider from "@mui/material/Slider";
+import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
+import PauseRoundedIcon from "@mui/icons-material/PauseRounded";
+import CircularProgress from "@mui/material/CircularProgress";
 
 export default function RealtimeCharts(props: TabProps) {
   // Endpoint URL and sensor ID values
@@ -32,10 +37,10 @@ export default function RealtimeCharts(props: TabProps) {
 
   useEffect(() => {
     let audioDataSource = new ConSysApi("audio",{
-        id: "03mtl1uill10",
+        id: "itd1rub6pht7q",
         protocol: "ws",
         endpointUrl: "/localhost:8181/sensorhub/api",
-        resource: '/datastreams/03mtl1uill10/observations',
+        resource: '/datastreams/itd1rub6pht7q/observations',
         mode: Mode.REAL_TIME,
     });
 
@@ -65,4 +70,61 @@ export default function RealtimeCharts(props: TabProps) {
       </div>
     </Grid>
   );
+
+// return (<Grid
+//           container
+//           sx={{ height: "100%", p: 4 }}
+//           justifyContent={"start"}
+//           alignItems={"flex-start"}
+//           spacing={2}
+//           >
+//             <div id="audio-chart-container" style={{ width: "50%" }}></div>
+//             <div id="audio-spectrogram" style={{ width: "50%" }}></div>
+//         <Box
+//             sx={{
+//               position: "absolute",
+//               display: isLoading ? "flex" : "none",
+//               zIndex: 9999,
+//               width: "100%",
+//               height: "100%",
+//               justifyContent: "center",
+//               alignItems: "center",
+//             }}
+//           >
+//           <CircularProgress />
+//         </Box>
+//         <Grid
+//             container
+//             sx={{ height: "60%", width: "100%" }}
+//             spacing={0}
+//             justifyContent={"center"}
+//           >
+//         </Grid>
+//         <Stack direction={"column"} width={"100%"}>
+//         <Stack
+//           direction={"row"}
+//           alignItems={"start"}
+//           justifyContent={"start"}
+//           gap={2}
+//           width={"100%"}
+//         >
+//         <IconButton onClick={handlePlaying}>
+//             {isPlaying ? <PauseRoundedIcon /> : <PlayArrowRoundedIcon />}
+//         </IconButton>
+//         <Stack direction={"column"} alignItems={"center"}>
+//             <Typography variant={"body1"}>
+//               {formatTime(currentTime)[0]}
+//             </Typography>
+//             <Typography variant={"body1"}>
+//               {formatTime(currentTime)[1]}
+//             </Typography>
+//         </Stack>
+//         <Typography variant={"body1"}>/</Typography>
+//         <Stack direction={"column"} alignItems={"center"}>
+//             <Typography variant={"body1"}>{formatTime(maxTime)[0]}</Typography>
+//             <Typography variant={"body1"}>{formatTime(maxTime)[1]}</Typography>
+//         </Stack>
+//         </Stack>
+//         </Stack>
+//         </Grid>);
 }

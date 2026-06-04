@@ -28,11 +28,11 @@ export interface TabProps {
 
 export default function App() {
   // Endpoint URL and sensor ID values
-  const sensorId = "03mtl1uill10";
+  const sensorId = "itd1rub6pht7q";
 
   // Time range values
-  const startTime = "2025-08-01T15:41:49.989Z";
-  const endTime = "2025-08-01T18:04:08.839Z";
+  const startTime = "2026-06-03T17:08:16.565Z";
+  const endTime = "2027-08-01T18:04:08.839Z";
 
   const [tab, setTab] = useState<number>(0);
 

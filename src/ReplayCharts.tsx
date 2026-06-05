@@ -150,11 +150,14 @@ export default function ReplayCharts(props: TabProps) {
 
   useEffect(() => {
       let audioDataSource = new ConSysApi("audio",{
+              startTime: startTime,
+              endTime: endTime,
               id: "itd1rub6pht7q",
               protocol: "ws",
               endpointUrl: "/localhost:8181/sensorhub/api",
               resource: '/datastreams/itd1rub6pht7q/observations',
               mode: Mode.REPLAY,
+              responseFormat: "application/swe+binary",
           });
 
            let audioView = new AudioView({
@@ -264,6 +267,7 @@ export default function ReplayCharts(props: TabProps) {
       startTime: startTime,
       endTime: endTime,
       dataSources: [audioDataSource],
+      mode: Mode.REPLAY,
     });
 
     // Connect data synchronizer

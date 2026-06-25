@@ -160,21 +160,21 @@ export default function ReplayCharts(props: TabProps) {
               responseFormat: "application/swe+binary",
           });
 
-           let audioView = new AudioView({
-               name: "Audio",
-               css: 'audio-css',
-               container: 'audio-chart-container',
-               dataSource: audioDataSource,
-               gain: 5,
-               playSound: false
-              });
+       let audioView = new AudioView({
+           name: "Audio",
+           css: 'audio-css',
+           container: 'audio-chart-container',
+           dataSource: audioDataSource,
+           gain: 5,
+           playSound: false
+          });
 
-              const audioSpectrogramVisualizer = new AudioSpectrogramVisualizer({
-                  fftSize: 2048,
-                  container: "audio-spectrogram",
-                  sampleField: 'samples',
-                  colorScale: 'jet',
-              });
+          const audioSpectrogramVisualizer = new AudioSpectrogramVisualizer({
+              fftSize: 2048,
+              container: "audio-spectrogram",
+              sampleField: 'samples',
+              colorScale: 'jet',
+          });
 //     let dht22DataSource = new ConSysApi("DHT22", {
 //       id: sensorId,
 //       protocol: "ws",

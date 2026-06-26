@@ -1,86 +1,84 @@
-/*
- * Copyright (c) 2024.  Botts Innovative Research, Inc.
- * All Rights Reserved
- *
- * opensensorhub/osh-viewer is licensed under the
- *
- * Mozilla Public License 2.0
- * Permissions of this weak copyleft license are conditioned on making available source code of licensed
- * files and modifications of those files under the same license (or in certain cases, one of the GNU licenses).
- * Copyright and license notices must be preserved. Contributors provide an express grant of patent rights.
- * However, a larger work using the licensed work may be distributed under different terms and without
- * source code for files added in the larger work.
- *
- */
-
-import React, { SyntheticEvent, useState } from "react";
-import { Grid, Tab, Tabs } from "@mui/material";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import RealtimeCharts from "./RealtimeCharts";
-import BatchCharts from "./BatchCharts";
-import ReplayCharts from "./ReplayCharts";
-
-export interface TabProps {
-  sensorId: string;
-  startTime?: string;
-  endTime?: string;
-}
+import React, {useEffect} from "react";
+import {Mode} from "osh-js/source/core/datasource/Mode";
+import ConSysApi from "osh-js/source/core/datasource/consysapi/ConSysApi.datasource";
+import AudioSpectrogramVisualizer
+    from "osh-js/source/core/ui/view/audio/visualizer/spectrogram/AudioSpectrogramVisualizer";
+import AudioView from 'osh-js/source/core/ui/view/audio/AudioView';
+import AudioFrequencyChartJsVisualizer from 'osh-js/source/core/ui/view/audio/visualizer/frequency/AudioFrequencyChartJsVisualizer';
+import AudioTimeChartJsVisualizer from 'osh-js/source/core/ui/view/audio/visualizer/time/AudioTimeChartJsVisualizer';
+import AudioDataLayer from 'osh-js/source/core/ui/layer/AudioDataLayer';
 
 export default function App() {
-  // Endpoint URL and sensor ID values
-  const sensorId = "itd1rub6pht7q";
+    const server = "localhost:8181/sensorhub/api";
+    const audioDsId = "itd1rub6pht7q";
 
-  // Time range values
-  const startTime = "2026-06-03T17:08:16.565Z";
-  const endTime = "2027-08-01T18:04:08.839Z";
 
-  const [tab, setTab] = useState<number>(0);
+    useEffect(() => {
 
-  const handleChange = (e: SyntheticEvent, value: number) => {
-    setTab(value);
-  };
+        let audioDataSource = new ConSysApi("audio", {
+            protocol: "ws",
+            endpointUrl: server,
+            resource: `/datastreams/${audioDsId}/observations`,
+            mode: Mode.REAL_TIME,
+            responseFormat: "application/swe+binary",
+            tls: false
+        });
 
-  return (
-    <Router>
-      <Grid container direction="column" height={"100%"}>
-        <Grid item sx={{ borderBottom: 1, borderColor: "divider" }}>
-          <Tabs
-            value={tab}
-            onChange={handleChange}
-            aria-label="chart option tabs"
-            centered
-          >
-            <Tab label="Realtime" value={0} component={Link} to="/" />
-            <Tab label="Batch" value={1} component={Link} to="/batch" />
-            <Tab label="Replay" value={2} component={Link} to="/replay" />
-          </Tabs>
-        </Grid>
-        <Grid item sx={{ flex: 1 }}>
-          <Routes>
-            <Route path="/" element={<RealtimeCharts sensorId={sensorId} />} />
-            <Route
-              path="/replay"
-              element={
-                <ReplayCharts
-                  sensorId={sensorId}
-                  startTime={startTime}
-                  endTime={endTime}
-                />
-              }
-            />
-            <Route
-              path="/batch"
-              element={
-                <BatchCharts
-                  sensorId={sensorId}
-                  startTime={startTime}
-                  endTime={endTime}
-                />
-              }
-            />
-          </Routes>
-        </Grid>
-      </Grid>
-    </Router>
-  );
+        let audioView = new AudioView({
+            name: 'Audio',
+            css: 'audio-view',
+            container: "audio-chart-container",
+            gain: 10,
+            playSound: true,
+            layers: [
+                new AudioDataLayer({
+                    dataSourceId: audioDataSource.id,
+                    getSampleRate: (rec: any) => rec.sampleRate,
+                    getFrameData: (rec: any) => rec.samples,
+                    getTimestamp: (rec: any) => new Date(rec.time).getTime()
+                })
+            ],
+        });
+
+        const audioChartFrequencyVisualizer = new AudioFrequencyChartJsVisualizer({
+            css: 'audio-canvas',
+            fftSize: 32,
+            container: `chart-frequency`,
+            options: {},
+            datasetOptions: {
+                borderColor: 'rgba(0,0,0,0.5)',
+                backgroundColor: 'rgba(210,210,210,0.8)',
+                barThickness:  20,
+                borderWidth: 1,
+            },
+        });
+
+        const audioChartTimeVisualizer = new AudioTimeChartJsVisualizer({
+            css: 'audio-canvas',
+            fftSize: 1024,
+            container: `chart-time`,
+        });
+
+        const audioSpectrogramVisualizer = new AudioSpectrogramVisualizer({
+            fftSize: 2048,
+            container: `spectrogram`,
+        });
+
+        audioView.addVisualizer(audioChartFrequencyVisualizer);
+        audioView.addVisualizer(audioChartTimeVisualizer);
+        audioView.addVisualizer(audioSpectrogramVisualizer);
+
+        audioDataSource.connect();
+    }, []);
+
+
+
+    return (
+        <div id="audio-chart-container" style={{width: "50%", height: "100vh"}}>
+            <div id="audio-spectrogram"></div>
+            <div id="spectrogram" className="audio-visualizer" style={{height: "300px"}}></div>
+            <div id="chart-time" className="audio-chart" style={{height: "300px"}}></div>
+            <div id="chart-frequency" className="audio-chart" style={{height: "300px"}}></div>
+        </div>
+    );
 }
